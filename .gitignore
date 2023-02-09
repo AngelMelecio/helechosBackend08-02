@@ -5,7 +5,7 @@
 _pycache_
 .vscode/
 .env
-#db.sqlite3
+db.sqlite3
 
 
 #0*.py
