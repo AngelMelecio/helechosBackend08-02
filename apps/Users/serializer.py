@@ -8,12 +8,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('usuario','correo','nombre','apellidos')
+        fields = ('id','usuario','correo','nombre','apellidos', 'is_active', 'is_staff')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('id','usuario','correo','nombre','apellidos', 'is_active', 'is_staff')
     
     def create(self,validated_data):
         user = User(**validated_data)
@@ -24,8 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('usuario', 'correo', 'nombre', 'apellidos')
-
+        fields = ('id','usuario','correo','nombre','apellidos', 'is_active', 'is_staff')
+    
 class PasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128, min_length=6, write_only=True)
     password2 = serializers.CharField(max_length=128, min_length=6, write_only=True)
@@ -46,5 +46,7 @@ class UserListSerializer(serializers.ModelSerializer):
             'id': instance['id'],
             'nombre': instance['nombre'],
             'usuario': instance['usuario'],
-            'correo': instance['correo']
+            'correo': instance['correo'],
+            'is_staff': instance['is_staff'],
+            'is_active': instance['is_active']
         }
