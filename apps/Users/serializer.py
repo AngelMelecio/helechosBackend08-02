@@ -13,7 +13,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id','usuario','correo','nombre','apellidos', 'is_active', 'is_staff')
+        fields = ('id','usuario','correo','nombre','apellidos', 'is_active', 'is_staff', 'password')
     
     def create(self,validated_data):
         user = User(**validated_data)
@@ -45,6 +45,7 @@ class UserListSerializer(serializers.ModelSerializer):
         return {
             'id': instance['id'],
             'nombre': instance['nombre'],
+            'apellidos': instance['apellidos'],
             'usuario': instance['usuario'],
             'correo': instance['correo'],
             'is_staff': instance['is_staff'],
