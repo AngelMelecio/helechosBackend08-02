@@ -31,7 +31,7 @@ def empleado_maquinas_api_view(request):
             return Response({'message':'Asignación correcta de maquinas'}, status=status.HTTP_200_OK)
         else:
             transaction.savepoint_rollback(sid)
-            return Response({'message':'Ha ocurrido un error durante la asignación de maquinas'}, status=status.HTTP_400_OK)
+            return Response({'message':'Ha ocurrido un error durante la asignación de maquinas'}, status=status.HTTP_409_CONFLICT)
 
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser, JSONParser])
