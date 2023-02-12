@@ -20,6 +20,7 @@ class Login(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         usuario = request.data.get('usuario', '')
         password = request.data.get('password', '')
+        
         user = authenticate(
             usuario=usuario,
             password=password
