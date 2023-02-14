@@ -46,8 +46,6 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(users_serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request):
-        print(request)
-        print(request.data)
         user_serializer = self.serializer_class(data=request.data)
         if user_serializer.is_valid():
             user_serializer.save()
@@ -79,8 +77,8 @@ class UserViewSet(viewsets.GenericViewSet):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
-        user_destroy = self.model.objects.filter(id=pk).update(is_active=False)
-        if user_destroy == 1:
+        user_destroy = self.model.objects.filter(id=pk).delete()
+        if user_destroy:
             return Response({
                 'message': 'Usuario eliminado correctamente'
             })
