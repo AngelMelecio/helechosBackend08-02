@@ -76,12 +76,11 @@ class UserViewSet(viewsets.GenericViewSet):
             'errors': user_serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, pk=None):
-        user_destroy = self.model.objects.filter(id=pk).delete()
-        if user_destroy:
-            return Response({
-                'message': 'Usuario eliminado correctamente'
-            })
-        return Response({
-            'message': 'No existe el usuario que desea eliminar'
-        }, status=status.HTTP_404_NOT_FOUND)
+    @action(detail=False, methods=['delete'])
+    def delete_user_apiView( self, request ):
+        ids = request.data
+        for obj in ids:
+            User.objects.filter( id = obj.get('id') ).delete()
+        return Response( {
+            "message":"Eliminación correcta de usuarios.",       
+        }, status=status.HTTP_200_OK )
