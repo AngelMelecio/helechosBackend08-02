@@ -59,13 +59,4 @@ def empleado_detail_api_view(request, pk=None):
         {'message':'No se encontró el empleado...'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
-"""
-@api_view(['POST'])
-def login( request ):
-    try:
-        login_user = Empleado.objects.get( usuario__exact = request.data['usuario'], contrasena__exact = request.data['contrasena'] )
-        return Response("Bienvenido", status=status.HTTP_200_OK)
-    except Empleado.DoesNotExist:
-        return Response("Usuario o contraseña no válidos", status=status.HTTP_401_UNAUTHORIZED)
-  
-"""    
+ 
