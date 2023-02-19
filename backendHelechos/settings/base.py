@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '!^%su^#^dzgjjgg@&$#i+^rm87m^mj6l&&-ny8@qnor06bslq='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -46,9 +46,6 @@ THIRD_APPS = [
 
 INSTALLED_APPS = BASE_APPS+LOCAL_APPS+THIRD_APPS
 
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-)
 
 
 REST_FRAMEWORK = {
@@ -113,10 +110,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'Users.User'
 
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-)
-
+CORS_ORIGIN_WHITELIST = [
+    'http://192.168.1.239:3000',
+]
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
