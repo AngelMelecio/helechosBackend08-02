@@ -42,6 +42,8 @@ def empleado_detail_api_view(request, pk=None):
         # Update
         elif request.method == 'PUT':
             empleado_serializer = EmpleadoSerializer(empleado, data = request.data)
+            print( 'PUTTING' )
+            print( request.data )
             if empleado_serializer.is_valid():
                 empleado_serializer.save()
                 return Response( {'message':'Empleado actualizado correctamente!.'}, status=status.HTTP_200_OK)

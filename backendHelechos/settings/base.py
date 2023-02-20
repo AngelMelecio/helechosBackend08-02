@@ -15,8 +15,6 @@ SECRET_KEY = '!^%su^#^dzgjjgg@&$#i+^rm87m^mj6l&&-ny8@qnor06bslq='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -111,8 +109,9 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'Users.User'
 
 CORS_ORIGIN_WHITELIST = [
-    'http://192.168.1.239:3000',
+    'http://localhost:3000',
 ]
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

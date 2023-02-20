@@ -39,6 +39,8 @@ def maquina_detail_api_view(request, pk=None ):
         # Update
         elif request.method == 'PUT':
             maquina_serializer = MaquinaSerializer(maquina, data = request.data)
+            print( 'PUTTING' )
+            print( request.data )
             if maquina_serializer.is_valid():
                 maquina_serializer.save()
                 return Response( {'message':'Máquina actualizada correctamente!.'}, status=status.HTTP_200_OK)
