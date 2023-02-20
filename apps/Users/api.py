@@ -57,11 +57,21 @@ class UserViewSet(viewsets.GenericViewSet):
             'errors': user_serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
+
     def retrieve(self, request, pk=None):
         user = self.get_object(pk)
         user_serializer = self.serializer_class(user)
         return Response(user_serializer.data)
     
+    @action(detail=False, methods=['delete'])
+    def delete_user_apiView( self, request ):
+        ids = request.data
+        for obj in ids:
+            User.objects.filter( id = obj.get('id') ).delete()
+        return Response( {
+            "message":"Eliminación correcta de usuarios.",       
+        }, status=status.HTTP_200_OK )
+
     def update(self, request, pk=None):
         user = self.get_object(pk)
         user_serializer = UpdateUserSerializer(user, data=request.data)
