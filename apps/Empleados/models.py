@@ -14,8 +14,9 @@ class Empleado(models.Model):
     departamento = models.CharField(max_length=20,
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
-                            default='Tejido' )
+                            default='Tejido')
     gafete = models.CharField(max_length=200,null=True, blank=True)
-    
+    is_active = models.BooleanField(default = True)
+
     def __str__(self):
         return "{} {} {}".format(self.nombre, self.apellidos, self.departamento)
