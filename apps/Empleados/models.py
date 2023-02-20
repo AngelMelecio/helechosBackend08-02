@@ -13,7 +13,6 @@ class Empleado(models.Model):
     ns = models.CharField(max_length=16, null=True, blank=True)
     fechaEntrada = models.DateField(null=True, blank=True)
     fechaAltaSeguro = models.DateField(null=True, blank=True)
-    is_active = models.BooleanField(default = True)
     departamento = models.CharField(max_length=20,
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
