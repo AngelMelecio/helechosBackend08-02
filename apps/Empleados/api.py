@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Empleados.models import Empleado
 from apps.Empleados.serializers import EmpleadoSerializer
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 
 @api_view(['GET','POST'])
 @parser_classes([MultiPartParser , JSONParser])
