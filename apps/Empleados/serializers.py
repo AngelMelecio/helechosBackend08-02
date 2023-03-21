@@ -4,8 +4,6 @@ from rest_framework import serializers,viewsets
 from apps.Empleados.models import Empleado
  
 
-
-
 # create a serializer class
 class EmpleadoSerializer(serializers.ModelSerializer):
 
