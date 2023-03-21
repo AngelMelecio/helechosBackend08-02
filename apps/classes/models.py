@@ -1,33 +1,6 @@
 from django.db import models
 
 
-
-class Cliente(models.Model):
-    idCliente = models.AutoField(auto_created=True, primary_key=True)
-    nombre = models.CharField(max_length=200)
-    direccion = models.CharField(max_length=200)
-    telefono = models.CharField(max_length=20)
-    correo = models.CharField(max_length=200)
-    otro = models.DateField()
-    fotografia = models.CharField(max_length=225)
-
-
-class Contacto(models.Model):
-    idContacto = models.AutoField(auto_created=True, primary_key=True)
-    nombre = models.CharField(max_length=200)
-    puesto = models.CharField(max_length=200)
-    correo = models.CharField(max_length=200)
-    telefono = models.CharField(max_length=20)
-    idCliente = models.CharField(max_length=20)
-
-
-class Modelo(models.Model):
-    idModelo = models.AutoField(auto_created=True, primary_key=True)
-    nombre = models.CharField(max_length=200)
-    colores = models.CharField(max_length=200)
-    fichaTecnica = models.FileField(null=True, blank=True)
-
-
 class Pedido(models.Model):
 
     idPedido = models.AutoField(auto_created=True, primary_key=True)

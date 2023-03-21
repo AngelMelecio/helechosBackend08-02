@@ -17,3 +17,6 @@ class Maquina(models.Model):
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
                             default='Tejido')
+
+    def __str__(self):
+        return "{} {} {}".format(self.linea, self.numero, self.departamento)

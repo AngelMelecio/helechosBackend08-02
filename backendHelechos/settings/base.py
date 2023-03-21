@@ -30,8 +30,12 @@ BASE_APPS = [
 LOCAL_APPS = [
     'apps.Users',
     'apps.Empleados',
+    'apps.Clientes',
+    'apps.Materiales',
+    'apps.Modelos',
     'apps.Maquinas',
-    'apps.EmpleadoMaquina'
+    'apps.EmpleadoMaquina',
+    'apps.Proveedores',
 ]
 
 THIRD_APPS = [
@@ -81,7 +85,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.contrib.messages.context_processors.media',
             ],
         },
     },
@@ -111,7 +114,8 @@ AUTH_USER_MODEL = 'Users.User'
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
-    'http://192.168.1.239:3000'
+    'http://192.168.1.239:3000',
+    'http://192.168.111.94:3000'
 ]
 
 
@@ -125,7 +129,7 @@ SIMPLE_JWT = {
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'UTC'
 

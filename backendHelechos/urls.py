@@ -18,6 +18,10 @@ from apps.Users.views import Login,Logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('apps.Clientes.urls')),
+    path('api/', include('apps.Materiales.urls')),
+    path('api/', include('apps.Modelos.urls')),
+    path('api/', include('apps.Proveedores.urls')),
     path('api/', include('apps.Empleados.urls')),
     path('api/', include('apps.Maquinas.urls')),
     path('api/', include('apps.EmpleadoMaquina.urls')),
