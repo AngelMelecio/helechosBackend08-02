@@ -13,6 +13,7 @@ class Modelo(models.Model):
    nombre = models.CharField(max_length=200,null=False, blank=False)
    nombrePrograma = models.CharField(max_length=200,null=False, blank=False)
    archivoPrograma=models.FileField(upload_to=upload_to,null=True, blank=True)
+   archivoFichaTecnica=models.FileField(upload_to=upload_to,null=True, blank=True)
    fotografia = models.ImageField(upload_to=upload_to,null=True, blank=True)
    cliente = models.ForeignKey(Cliente, on_delete=models.DO_NOTHING,null=False, blank=False)
    talla = models.CharField(max_length=25,null=False, blank=False)
