@@ -2,11 +2,15 @@ from rest_framework import serializers
  
 # import the todo data model
 from apps.Materiales.models import Material
+from apps.Proveedores.serializers import ProveedorSerializer
  
-# create a serializer class
 class MaterialSerializer(serializers.ModelSerializer):
- 
-    # create a meta class
+    class Meta:
+        model = Material
+        fields = '__all__'
+
+class MaterialSerializerListar(serializers.ModelSerializer):
+    proveedor = ProveedorSerializer()
     class Meta:
         model = Material
         fields = '__all__'
