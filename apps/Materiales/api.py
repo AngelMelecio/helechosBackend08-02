@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Materiales.models import Material
-from apps.Materiales.serializers import MaterialSerializer
+from apps.Materiales.serializers import MaterialSerializer,MaterialSerializerListar
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 @api_view(['GET','POST'])
@@ -12,7 +12,7 @@ def material_api_view(request):
     # list
     if request.method == 'GET':
         materiales = Material.objects.all()
-        material_serializer = MaterialSerializer(materiales,many=True)
+        material_serializer = MaterialSerializerListar(materiales,many=True)
         return Response( material_serializer.data, status=status.HTTP_200_OK )
 
     # Create
@@ -20,7 +20,7 @@ def material_api_view(request):
         material_serializer = MaterialSerializer(data=request.data)
         if material_serializer.is_valid():
             material_serializer.save()
-            return Response( {'message':'Matewrial creado correctamente!.'}, status=status.HTTP_201_CREATED )
+            return Response( {'message':'Material creado correctamente!.'}, status=status.HTTP_201_CREATED )
         return Response( material_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
 @api_view(['GET','PUT','DELETE'])
