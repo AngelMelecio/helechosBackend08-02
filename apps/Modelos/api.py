@@ -42,7 +42,6 @@ def modelo_detail_api_view(request, pk=None):
         # Update
         elif request.method == 'PUT':
             modelo_serializer = ModeloSerializer(modelo, data = request.data)
-            print( 'PUTTING' )
             print( request.data )
             if modelo_serializer.is_valid():
                 modelo_serializer.save()
