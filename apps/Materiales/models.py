@@ -9,7 +9,7 @@ class Material(models.Model):
                             default='Poliester') 
     color= models.CharField(max_length=200,null=True, blank=True)
     calibre= models.CharField(max_length=5,
-                              choices=[('150', '150'),('300', '300')],null=True, blank=True)
+                              choices=[('150', '150'),('300', '300'),('---','---')],null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.DO_NOTHING)
     tenida = models.CharField(max_length=200,null=True, blank=True)
     codigoColor = models.CharField(max_length=200,null=True, blank=True)
