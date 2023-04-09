@@ -1,6 +1,5 @@
 from rest_framework import serializers
  
-# import the todo data model
 from apps.Materiales.models import Material
 from apps.Proveedores.serializers import ProveedorSerializer
  
