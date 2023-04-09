@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Modelos.models import Modelo
-from apps.Modelos.serializers import ModeloSerializer
+from apps.Modelos.serializers import ModeloSerializer, ModeloSerializerListar
 from rest_framework.parsers import MultiPartParser, JSONParser
 
 @api_view(['GET','POST'])
@@ -12,7 +12,7 @@ def modelo_api_view(request):
     # list
     if request.method == 'GET':
         modelos = Modelo.objects.all()
-        modelo_serializer = ModeloSerializer(modelos,many=True)
+        modelo_serializer = ModeloSerializerListar(modelos,many=True)
         return Response( modelo_serializer.data, status=status.HTTP_200_OK )
 
     # Create

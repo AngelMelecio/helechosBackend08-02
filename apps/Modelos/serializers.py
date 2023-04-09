@@ -1,12 +1,18 @@
 from rest_framework import serializers
  
-# import the todo data model
 from apps.Modelos.models import Modelo
- 
-# create a serializer class
+from apps.Clientes.serializers import ClienteSerializer
+from apps.Maquinas.serializers import MaquinaSerializer
+
 class ModeloSerializer(serializers.ModelSerializer):
- 
-    # create a meta class
+    class Meta:
+        model = Modelo
+        fields = '__all__'
+
+class ModeloSerializerListar(serializers.ModelSerializer):
+    cliente = ClienteSerializer()
+    maquinaTejido = MaquinaSerializer()
+    maquinaPlancha = MaquinaSerializer()
     class Meta:
         model = Modelo
         fields = '__all__'
