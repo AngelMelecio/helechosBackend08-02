@@ -33,7 +33,7 @@ class UserViewSet(viewsets.GenericViewSet):
             user.set_password(password_serializer.validated_data['password'])
             user.save()
             return Response({
-                'message': 'Contraseña actualizada correctamente'
+                'message': '¡Contraseña actualizada correctamente!'
             })
         return Response({
             'message': 'Hay errores en la información enviada',
@@ -50,7 +50,7 @@ class UserViewSet(viewsets.GenericViewSet):
         if user_serializer.is_valid():
             user_serializer.save()
             return Response({
-                'message': 'Usuario registrado correctamente.'
+                'message': '¡Usuario registrado correctamente!'
             }, status=status.HTTP_201_CREATED)
         return Response({
             'message': 'Hay errores en el registro',
@@ -69,7 +69,7 @@ class UserViewSet(viewsets.GenericViewSet):
         for obj in ids:
             User.objects.filter( id = obj.get('id') ).delete()
         return Response( {
-            "message":"Eliminación correcta de usuarios.",       
+            "message":"¡Eliminación correcta de usuarios!",       
         }, status=status.HTTP_200_OK )
 
     def update(self, request, pk=None):
@@ -79,7 +79,7 @@ class UserViewSet(viewsets.GenericViewSet):
             user_serializer.save()
             return Response({
                 'usuario': user_serializer.data,
-                'message': 'Usuario actualizado correctamente'
+                'message': '¡Usuario actualizado correctamente!'
             }, status=status.HTTP_200_OK)
         return Response({ 
             'message': 'Hay errores en la actualización',
@@ -92,5 +92,5 @@ class UserViewSet(viewsets.GenericViewSet):
         for obj in ids:
             User.objects.filter( id = obj.get('id') ).delete()
         return Response( {
-            "message":"Eliminación correcta de usuarios.",       
+            "message":"¡Eliminación correcta de usuarios!",       
         }, status=status.HTTP_200_OK )

@@ -21,7 +21,7 @@ def modelo_api_view(request):
         if modelo_serializer.is_valid():
             modelo_serializer.save()
             return Response( {
-                'message':'Modelo creado correctamente!.',
+                'message':'¡Modelo creado correctamente!',
                 'modelo': modelo_serializer.data
             }, status=status.HTTP_201_CREATED )
         return Response( modelo_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
@@ -42,10 +42,9 @@ def modelo_detail_api_view(request, pk=None):
         # Update
         elif request.method == 'PUT':
             modelo_serializer = ModeloSerializer(modelo, data = request.data)
-            print( request.data )
             if modelo_serializer.is_valid():
                 modelo_serializer.save()
-                return Response( {'message':'Modelo actualizado correctamente!.'}, status=status.HTTP_200_OK)
+                return Response( {'message':'¡Modelo actualizado correctamente!'}, status=status.HTTP_200_OK)
             return Response(modelo_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
@@ -53,11 +52,11 @@ def modelo_detail_api_view(request, pk=None):
             modelo = Modelo.objects.filter( idModelo = pk ).first()
             modelo.delete()
             return Response(
-                {'message':'Modelo eliminado correctamente!.'}, 
+                {'message':'¡Modelo eliminado correctamente!'}, 
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message':'No se encontró el modelo...'}, 
+        {'message':'No se encontró el modelo'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
  

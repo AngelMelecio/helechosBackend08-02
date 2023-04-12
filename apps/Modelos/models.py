@@ -33,7 +33,7 @@ class Modelo(models.Model):
     pesoPoliester = models.CharField(max_length=25, null=True, blank=True)
     pesoMelt = models.CharField(max_length=25, null=True, blank=True)
     pesoLurex = models.CharField(max_length=25, null=True, blank=True)
-    materiales = models.JSONField(null=True, blank=True)
+    #materiales = models.JSONField(null=True, blank=True)
     numeroPuntos = models.JSONField(null=True, blank=True)
     jalones = models.JSONField(null=True, blank=True)
     economisadores = models.JSONField(null=True, blank=True)

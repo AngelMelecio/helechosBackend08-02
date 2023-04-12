@@ -20,7 +20,7 @@ def maquina_api_view(request):
         maquina_serializer = MaquinaSerializer(data=request.data)
         if maquina_serializer.is_valid():
             maquina_serializer.save()
-            return Response( {'message':'Máquina creada correctamente!.'}, status=status.HTTP_201_CREATED )
+            return Response( {'message':'¡Máquina creada correctamente!'}, status=status.HTTP_201_CREATED )
         return Response( maquina_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
 @api_view(['GET','PUT','DELETE'])
@@ -39,11 +39,9 @@ def maquina_detail_api_view(request, pk=None ):
         # Update
         elif request.method == 'PUT':
             maquina_serializer = MaquinaSerializer(maquina, data = request.data)
-            print( 'PUTTING' )
-            print( request.data )
             if maquina_serializer.is_valid():
                 maquina_serializer.save()
-                return Response( {'message':'Máquina actualizada correctamente!.'}, status=status.HTTP_200_OK)
+                return Response( {'message':'¡Máquina actualizada correctamente!'}, status=status.HTTP_200_OK)
             return Response(maquina_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
@@ -51,11 +49,11 @@ def maquina_detail_api_view(request, pk=None ):
             maquina = Maquina.objects.filter( idMaquina = pk ).first()
             maquina.delete()
             return Response(
-                {'message':'Máquina eliminada correctamente!.'}, 
+                {'message':'¡Máquina eliminada correctamente!'}, 
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message':'No se encontró la máquina...'}, 
+        {'message':'No se encontró la máquina'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
         

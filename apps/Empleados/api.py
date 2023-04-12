@@ -21,7 +21,7 @@ def empleado_api_view(request):
         if empleado_serializer.is_valid():
             empleado_serializer.save()
             return Response( {
-                'message':'Empleado creado correctamente!.',
+                'message':'¡Empleado creado correctamente!',
                 'empleado': empleado_serializer.data
             }, status=status.HTTP_201_CREATED )
         return Response( empleado_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
@@ -42,11 +42,9 @@ def empleado_detail_api_view(request, pk=None):
         # Update
         elif request.method == 'PUT':
             empleado_serializer = EmpleadoSerializer(empleado, data = request.data)
-            print( 'PUTTING' )
-            print( request.data )
             if empleado_serializer.is_valid():
                 empleado_serializer.save()
-                return Response( {'message':'Empleado actualizado correctamente!.'}, status=status.HTTP_200_OK)
+                return Response( {'message':'¡Empleado actualizado correctamente!'}, status=status.HTTP_200_OK)
             return Response(empleado_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
@@ -54,11 +52,11 @@ def empleado_detail_api_view(request, pk=None):
             empleado = Empleado.objects.filter( idEmpleado = pk ).first()
             empleado.delete()
             return Response(
-                {'message':'Empleado eliminado correctamente!.'}, 
+                {'message':'¡Empleado eliminado correctamente!'}, 
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message':'No se encontró el empleado...'}, 
+        {'message':'No se encontró el empleado'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
  
