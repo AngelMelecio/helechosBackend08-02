@@ -21,7 +21,7 @@ def cliente_api_view(request):
         cliente_serializer = ClienteSerializer(data=request.data)
         if cliente_serializer.is_valid():
             cliente_serializer.save()
-            return Response( {'message':'Cliente creado correctamente!.'}, status=status.HTTP_201_CREATED )
+            return Response( {'message':'¡Cliente creado correctamente!'}, status=status.HTTP_201_CREATED )
         return Response( cliente_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
 @api_view(['GET','PUT','DELETE'])
@@ -44,7 +44,7 @@ def cliente_detail_api_view(request, pk=None ):
 
             if cliente_serializer.is_valid():
                 cliente_serializer.save()
-                return Response( {'message':'Cliente actualizado correctamente!.'}, status=status.HTTP_200_OK)
+                return Response( {'message':'¡Cliente actualizado correctamente!'}, status=status.HTTP_200_OK)
             return Response(cliente_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
@@ -52,12 +52,12 @@ def cliente_detail_api_view(request, pk=None ):
             cliente = Cliente.objects.filter( idCliente = pk ).first()
             cliente.delete()
             return Response(
-                {'message':'Cliente eliminado correctamente!.'}, 
+                {'message':'¡Cliente eliminado correctamente!'}, 
                 status=status.HTTP_200_OK
             )
    
     return Response(
-        {'message':'No se encontró el cliente...'}, 
+        {'message':'No se encontró el cliente'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
         

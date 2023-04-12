@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/', include('apps.Empleados.urls')),
     path('api/', include('apps.Maquinas.urls')),
     path('api/', include('apps.EmpleadoMaquina.urls')),
+    path('api/', include('apps.ModeloMaterial.urls')),
     path('logout/', Logout.as_view(), name = 'logout'),
     path('login/',Login.as_view(), name = 'login'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -28,7 +28,7 @@ def empleado_maquinas_api_view(request):
                 success = False
         if success:
             transaction.savepoint_commit(sid)
-            return Response({'message':'Asignación correcta de maquinas'}, status=status.HTTP_200_OK)
+            return Response({'message':'¡Asignación correcta de máquinas!'}, status=status.HTTP_200_OK)
         else:
             transaction.savepoint_rollback(sid)
             return Response({'message':'Ha ocurrido un error durante la asignación de maquinas'}, status=status.HTTP_409_CONFLICT)
@@ -47,7 +47,7 @@ def empleado_maquina_api_view(request):
         empleadoMaquina_serializer = EmpleadoMaquinaSerializer( data=request.data )
         if empleadoMaquina_serializer.is_valid():
             empleadoMaquina_serializer.save()
-            return Response({'message': 'Maquinas asignadas correctamente!.'}, status=status.HTTP_201_CREATED)
+            return Response({'message': '¡Máquinas asignadas correctamente!'}, status=status.HTTP_201_CREATED)
         return Response(empleadoMaquina_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -68,10 +68,10 @@ def empleado_maquina_detail_api_view(request, pkEmpleado):
             empleadoMaquina = EmpleadoMaquina.objects.filter(idEmpleado=pkEmpleado)
             empleadoMaquina.delete()
             return Response(
-                {'message': 'Se quitaron las maquinas al empleado!.'},
+                {'message': '¡Se quitaron las máquinas al empleado!'},
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message': 'No se encontraron maquinas relacionadas...'},
+        {'message': 'No se encontraron maquinas relacionadas'},
         status=status.HTTP_200_OK
     )

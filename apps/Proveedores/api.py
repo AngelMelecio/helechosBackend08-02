@@ -20,7 +20,7 @@ def proveedor_api_view(request):
         proveedor_serializer = ProveedorSerializer(data=request.data)
         if proveedor_serializer.is_valid():
             proveedor_serializer.save()
-            return Response( {'message':'Proveedor creado correctamente!.'}, status=status.HTTP_201_CREATED )
+            return Response( {'message':'¡Proveedor creado correctamente!'}, status=status.HTTP_201_CREATED )
         return Response( proveedor_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
 @api_view(['GET','PUT','DELETE'])
@@ -39,11 +39,9 @@ def proveedor_detail_api_view(request, pk=None ):
         # Update
         elif request.method == 'PUT':
             proveedor_serializer = ProveedorSerializer(proveedor, data = request.data)
-            print( 'PUTTING' )
-            print( request.data )
             if proveedor_serializer.is_valid():
                 proveedor_serializer.save()
-                return Response( {'message':'Proveedor actualizado correctamente!.'}, status=status.HTTP_200_OK)
+                return Response( {'message':'¡Proveedor actualizado correctamente!'}, status=status.HTTP_200_OK)
             return Response(proveedor_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
@@ -51,11 +49,11 @@ def proveedor_detail_api_view(request, pk=None ):
             proveedor = Proveedor.objects.filter( idProveedor = pk ).first()
             proveedor.delete()
             return Response(
-                {'message':'Proveedor eliminado correctamente!.'}, 
+                {'message':'¡Proveedor eliminado correctamente!'}, 
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message':'No se encontró el proveedor...'}, 
+        {'message':'No se encontró el proveedor'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
         

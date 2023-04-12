@@ -5,6 +5,7 @@ from django.db import models
 class Proveedor(models.Model):
     idProveedor = models.AutoField(auto_created=True, primary_key=True)
     nombre = models.CharField(max_length=200)
+    rfc = models.CharField(max_length=200,null=True, blank=True)
     direccion = models.CharField(max_length=200,null=True, blank=True)
     telefono = models.CharField(max_length=20,null=True, blank=True)
     correo = models.CharField(max_length=200,null=True, blank=True)
@@ -17,4 +18,4 @@ class Proveedor(models.Model):
 
 
     def __str__(self):
-        return "{}".format(self.nombre)
+        return "{} {}".format(self.nombre, self.rfc)
