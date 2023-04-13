@@ -24,7 +24,7 @@ DATABASES = {
         'PORT': '3306',
         'USER': 'root',
         'PASSWORD': 'cesaradmin',
-        'NAME':'helechosData',
+        'NAME':'helechosData2',
         'OPTIONS':{
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
