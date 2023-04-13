@@ -36,7 +36,8 @@ LOCAL_APPS = [
     'apps.Maquinas',
     'apps.EmpleadoMaquina',
     'apps.Proveedores',
-    'apps.ModeloMaterial',
+    'apps.FichaTecnicaMaterial',
+    'apps.FichasTecnicas'
 ]
 
 THIRD_APPS = [
