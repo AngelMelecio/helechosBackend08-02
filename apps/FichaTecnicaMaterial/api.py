@@ -19,7 +19,7 @@ def ficha_tecnica_material_post_api_view(request):
         idFichaTecnica = request.data.get('idFichaTecnica')
         materiales = request.data.get('materiales')
         success = True
-
+        #revisar eficacia de estos metodos y cual puede ser mejor: (editar -insertar) o (eliminar - insertar)
         FichaTecnicaMaterial.objects.select_for_update().filter( fichaTecnica = idFichaTecnica ).delete()
         for m in materiales:
             objFichaTecnicaMaterial = { 'fichaTecnica':idFichaTecnica, 'material':m.get('idMaterial'), 'guiaHilos':m.get('guiaHilos'), 'hebras':m.get('hebras'), 'peso':m.get('peso')}

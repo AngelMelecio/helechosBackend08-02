@@ -13,10 +13,7 @@ class FichaTecnica(models.Model):
     modelo = models.ForeignKey(
         Modelo, on_delete=models.DO_NOTHING, related_name='modelo')
     nombre = models.CharField(max_length=200, null=True, blank=True)
-    nombrePrograma = models.CharField(max_length=200, null=True, blank=True)
     archivoPrograma = models.FileField(
-        upload_to=upload_to, null=True, blank=True)
-    archivoFichaTecnica = models.FileField(
         upload_to=upload_to, null=True, blank=True)
     fotografia = models.ImageField(upload_to=upload_to, null=True, blank=True)
     talla = models.CharField(max_length=25, null=True, blank=True)
@@ -30,13 +27,12 @@ class FichaTecnica(models.Model):
         Maquina, on_delete=models.DO_NOTHING, related_name='maquinaPlancha')
     velocidadPlancha = models.CharField(max_length=25, null=True, blank=True)
     temperaturaPlancha = models.CharField(max_length=25, null=True, blank=True)
-    pesoPoliester = models.CharField(max_length=25, null=True, blank=True)
-    pesoMelt = models.CharField(max_length=25, null=True, blank=True)
-    pesoLurex = models.CharField(max_length=25, null=True, blank=True)
     numeroPuntos = models.JSONField(null=True, blank=True)
     jalones = models.JSONField(null=True, blank=True)
     economisadores = models.JSONField(null=True, blank=True)
     otros = models.TextField(null=True, blank=True)
+    fechaCreacion = models.DateField(null=True, blank=True)
+    fechaUltimaEdicion = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return "{} {}".format(self.modelo ,self.nombre)

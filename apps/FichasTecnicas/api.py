@@ -5,7 +5,7 @@ from rest_framework.decorators import parser_classes
 from apps.FichasTecnicas.models import FichaTecnica
 from apps.FichasTecnicas.serializers import FichaTecnicaSerializer, FichaTecnicaSerializerListar
 from rest_framework.parsers import MultiPartParser, JSONParser
-
+#crear una api para listar las fichas tecnicas en base al modelo
 @api_view(['GET','POST'])
 @parser_classes([MultiPartParser , JSONParser])
 def ficha_tecnica_api_view(request):
