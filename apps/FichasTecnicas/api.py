@@ -59,4 +59,20 @@ def ficha_tecnica_detail_api_view(request, pk=None):
         {'message':'No se encontró la ficha técnica'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
- 
+
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def ficha_tecnica_get_for_model(request, pkModelo):
+    # Queryset
+    fichaTecnica = FichaTecnica.objects.filter(modelo=pkModelo)
+    # Validacion
+    if fichaTecnica:
+        # Retrieve
+        if request.method == 'GET':
+            fichaTecnicaSerializerListar = FichaTecnicaSerializerListar(fichaTecnica, many=True)
+            return Response(fichaTecnicaSerializerListar.data, status=status.HTTP_200_OK)
+    return Response(
+        {'message': 'No se encontraron fichas técnicas relacionadas'},
+        status=status.HTTP_200_OK
+    )
