@@ -27,6 +27,8 @@ def ficha_tecnica_material_post_api_view(request):
             if fichaTecnicaMaterial_serializer.is_valid():
                 fichaTecnicaMaterial_serializer.save()
             else:
+                print('ERROR')
+                print(fichaTecnicaMaterial_serializer.errors)
                 success = False
         if success:
             transaction.savepoint_commit(sid)
