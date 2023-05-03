@@ -20,9 +20,11 @@ def modelo_api_view(request):
         modelo_serializer = ModeloSerializer(data=request.data)
         if modelo_serializer.is_valid():
             modelo_serializer.save()
+            modelos = Modelo.objects.all()
+            modelo_serializer = ModeloSerializerListar(modelos,many=True)
             return Response( {
                 'message':'¡Modelo creado correctamente!',
-                'modelo': modelo_serializer.data
+                'modelos': modelo_serializer.data
             }, status=status.HTTP_201_CREATED )
         return Response( modelo_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
@@ -44,7 +46,12 @@ def modelo_detail_api_view(request, pk=None):
             modelo_serializer = ModeloSerializer(modelo, data = request.data)
             if modelo_serializer.is_valid():
                 modelo_serializer.save()
-                return Response( {'message':'¡Modelo actualizado correctamente!'}, status=status.HTTP_200_OK)
+                modelos = Modelo.objects.all()
+                modelo_serializer = ModeloSerializerListar(modelos,many=True)
+                return Response( {
+                    'message':'¡Modelo actualizado correctamente!',
+                    'modelos': modelo_serializer.data
+                }, status=status.HTTP_200_OK )
             return Response(modelo_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
