@@ -34,9 +34,7 @@ def ficha_tecnica_api_view(request):
 def ficha_tecnica_detail_api_view(request, pk=None):
     # Queryset
     fichas = FichaTecnica.objects.filter(modelo_id=pk)
-    # Validacion
-
-    print('FICHA')
+    
     # Retrieve
     if request.method == 'GET':
         ficha_serializer = FichaTecnicaSerializer(fichas, many=True)
@@ -50,7 +48,10 @@ def ficha_tecnica_detail_api_view(request, pk=None):
             ficha_serializer.save()
             return Response({'message': 'Ficha técnica actualizada correctamente!'},
                             status=status.HTTP_200_OK)
-        return Response(ficha_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else :
+            print("ERRORES")
+            print(ficha_serializer.errors)
+        return Response( ficha_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         ficha = FichaTecnica.objects.filter(idFichaTecnica=pk).first()
