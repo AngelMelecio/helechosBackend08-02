@@ -47,8 +47,16 @@ def ficha_tecnica_material_get_one_api_view(request, pkFichaTecnica):
         # Retrieve
         if request.method == 'GET':
             fichaTecnicaMaterialSerializerListar = FichaTecnicaMaterialSerializerListar(fichaTecnicaMaterial, many=True)
-            return Response(fichaTecnicaMaterialSerializerListar.data, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    'materiales':fichaTecnicaMaterialSerializerListar.data,
+                    'message': 'Materiales relacionados encontrados'
+                },
+                status=status.HTTP_200_OK)
     return Response(
-        {'message': 'No se encontraron materiales relacionados'},
+        { 
+            'materiales':[],
+            'message': 'No se encontraron materiales relacionados'
+        },
         status=status.HTTP_200_OK
     )
