@@ -22,7 +22,7 @@ def ficha_tecnica_material_post_api_view(request):
         #revisar eficacia de estos metodos y cual puede ser mejor: (editar -insertar) o (eliminar - insertar)
         FichaTecnicaMaterial.objects.select_for_update().filter( fichaTecnica = idFichaTecnica ).delete()
         for m in materiales:
-            objFichaTecnicaMaterial = { 'fichaTecnica':idFichaTecnica, 'material':m.get('idMaterial'), 'guiaHilos':m.get('guiaHilos'), 'hebras':m.get('hebras'), 'peso':m.get('peso')}
+            objFichaTecnicaMaterial = { 'fichaTecnica':idFichaTecnica, 'material':m.get('idMaterial'), 'guiaHilos':m.get('guiaHilos'), 'hebras':int(m.get('hebras')), 'peso':float(m.get('peso'))}
             fichaTecnicaMaterial_serializer = FichaTecnicaMaterialSerializer( data=objFichaTecnicaMaterial )
             if fichaTecnicaMaterial_serializer.is_valid():
                 fichaTecnicaMaterial_serializer.save()
