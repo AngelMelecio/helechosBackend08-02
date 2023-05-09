@@ -6,7 +6,7 @@ from apps.Materiales.models import Material
 # Create your models here.
 class FichaTecnicaMaterial(models.Model):
     fichaTecnica = models.ForeignKey(FichaTecnica, on_delete=models.CASCADE)
-    material = models.ForeignKey(Material, on_delete=models.DO_NOTHING)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
     guiaHilos = models.CharField(max_length=200,null=True, blank=True)
     hebras = models.IntegerField(null=True,blank=True)
     peso =models.DecimalField(decimal_places=4, max_digits=8)

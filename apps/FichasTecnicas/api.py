@@ -22,7 +22,11 @@ def ficha_tecnica_api_view(request):
         ficha_serializer = FichaTecnicaSerializer(data=request.data)
         if ficha_serializer.is_valid():
             ficha_serializer.save()
+            idModelo = request.data.get('modelo')
+            fichas = FichaTecnica.objects.filter(modelo_id=idModelo)
+            fichas_serializer = FichaTecnicaSerializerListar(fichas, many=True)
             return Response({
+                'fichas': fichas_serializer.data,
                 'message': 'Ficha técnica creada correctamente!',
                 'ficha': ficha_serializer.data
             }, status=status.HTTP_201_CREATED)
@@ -34,10 +38,10 @@ def ficha_tecnica_api_view(request):
 def ficha_tecnica_detail_api_view(request, pk=None):
     # Queryset
     fichas = FichaTecnica.objects.filter(modelo_id=pk)
-    
+
     # Retrieve
     if request.method == 'GET':
-        ficha_serializer = FichaTecnicaSerializer(fichas, many=True)
+        ficha_serializer = FichaTecnicaSerializerListar(fichas, many=True)
         return Response(ficha_serializer.data, status=status.HTTP_200_OK)
 
     # Update
@@ -46,12 +50,18 @@ def ficha_tecnica_detail_api_view(request, pk=None):
         ficha_serializer = FichaTecnicaSerializer(ficha, data=request.data)
         if ficha_serializer.is_valid():
             ficha_serializer.save()
-            return Response({'message': 'Ficha técnica actualizada correctamente!'},
-                            status=status.HTTP_200_OK)
-        else :
+            idModelo = request.data.get('modelo')
+            fichas = FichaTecnica.objects.filter(modelo_id=idModelo)
+            fichas_serializer = FichaTecnicaSerializerListar(fichas, many=True)
+            return Response({
+                'fichas': fichas_serializer.data,
+                'ficha': ficha_serializer.data,
+                'message': 'Ficha técnica actualizada correctamente!'
+            }, status=status.HTTP_200_OK)
+        else:
             print("ERRORES")
             print(ficha_serializer.errors)
-        return Response( ficha_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ficha_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         ficha = FichaTecnica.objects.filter(idFichaTecnica=pk).first()
