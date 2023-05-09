@@ -38,7 +38,7 @@ def modelo_detail_api_view(request, pk=None):
     if modelo:
         # Retrieve
         if request.method == 'GET':
-            modelo_serializer =  ModeloSerializer(modelo)
+            modelo_serializer =  ModeloSerializerListar(modelo)
             return Response( modelo_serializer.data, status=status.HTTP_200_OK )
         
         # Update
@@ -52,6 +52,7 @@ def modelo_detail_api_view(request, pk=None):
                     'message':'¡Modelo actualizado correctamente!',
                     'modelos': modelo_serializer.data
                 }, status=status.HTTP_200_OK )
+            print('ERROR', modelo_serializer.errors)
             return Response(modelo_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete
