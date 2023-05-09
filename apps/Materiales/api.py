@@ -28,12 +28,12 @@ def material_api_view(request):
 def material_detail_api_view(request, pk=None ):
     # Queryset
     material = Material.objects.filter( idMaterial = pk ).first()
-    
+   
     # Validacion
     if material:
         # Retrieve
         if request.method == 'GET':
-            material_serializer =  MaterialSerializer(material)
+            material_serializer =  MaterialSerializerListar(material)
             return Response( material_serializer.data, status=status.HTTP_200_OK )
         
         # Update
