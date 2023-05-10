@@ -53,7 +53,7 @@ def empleado_maquina_api_view(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
-def empleado_maquina_detail_api_view(request, pkEmpleado):
+def empleado_maquinas_detail_api_view(request, pkEmpleado):
     # Queryset
     empleadoMaquina = EmpleadoMaquina.objects.filter(idEmpleado=pkEmpleado)
     # Validacion
