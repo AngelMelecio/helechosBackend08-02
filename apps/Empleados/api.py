@@ -44,7 +44,12 @@ def empleado_detail_api_view(request, pk=None):
             empleado_serializer = EmpleadoSerializer(empleado, data = request.data)
             if empleado_serializer.is_valid():
                 empleado_serializer.save()
-                return Response( {'message':'¡Empleado actualizado correctamente!'}, status=status.HTTP_200_OK)
+                return Response( { 
+                    'message':'¡Empleado actualizado correctamente!',
+                    'empleado': empleado_serializer.data
+                }, status=status.HTTP_200_OK)
+            print('EEROR EMPLEDO')
+            print(empleado_serializer.errors)
             return Response(empleado_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         
         # Delete

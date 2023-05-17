@@ -47,11 +47,18 @@ def maquina_detail_api_view(request, pk=None ):
         # Delete
         elif request.method == 'DELETE':
             maquina = Maquina.objects.filter( idMaquina = pk ).first()
-            maquina.delete()
-            return Response(
-                {'message':'¡Máquina eliminada correctamente!'}, 
-                status=status.HTTP_200_OK
-            )
+            try:
+                maquina.delete()
+                return Response(
+                    {'message':'¡Máquina eliminada correctamente!'}, 
+                    status=status.HTTP_200_OK
+                )
+            except Exception as e:
+                return Response(
+                    {'message':'¡No es posible eliminar una máquina en uso!'}, 
+                    status=status.HTTP_409_CONFLICT
+                )
+
     return Response(
         {'message':'No se encontró la máquina'}, 
         status=status.HTTP_400_BAD_REQUEST
