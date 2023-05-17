@@ -72,6 +72,6 @@ def empleado_maquinas_detail_api_view(request, pkEmpleado):
                 status=status.HTTP_200_OK
             )
     return Response(
-        {'message': 'No se encontraron maquinas relacionadas'},
+        [],
         status=status.HTTP_200_OK
     )
