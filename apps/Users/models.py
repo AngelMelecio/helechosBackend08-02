@@ -4,7 +4,7 @@ from simple_history.models import HistoricalRecords
 
 # Create your models here.
 class UserManager(BaseUserManager):
-    def _create_user(self, nombre, apellidos, correo, usuario, password, is_staff, is_superuser, **extra_fields):
+    def _create_user(self, nombre, apellidos, correo, usuario, password, is_staff, is_superuser, rol,**extra_fields):
         user = self.model(
             nombre = nombre,
             apellidos= apellidos,
@@ -12,17 +12,18 @@ class UserManager(BaseUserManager):
             usuario = usuario,
             is_staff = is_staff,
             is_superuser = is_superuser,
+            rol = rol,
             **extra_fields
         )
         user.set_password(password)
         user.save(using=self.db)
         return user
 
-    def create_user(self,nombre,apellidos, correo, usuario, password=None, **extra_fields):
-        return self._create_user(nombre,apellidos, correo, usuario, password, False, False, **extra_fields)
+    def create_user(self,nombre,apellidos, correo, usuario ,rol, password=None, **extra_fields):
+        return self._create_user(nombre,apellidos, correo, usuario, rol, password, False, False, **extra_fields)
 
-    def create_superuser(self,nombre,apellidos, correo, usuario, password=None, **extra_fields):
-        return self._create_user(nombre, apellidos, correo, usuario, password, True, True, **extra_fields)
+    def create_superuser(self,nombre,apellidos, correo, usuario, rol, password=None, **extra_fields):
+        return self._create_user(nombre, apellidos, correo, usuario, rol, password, True, True, **extra_fields)
 
 class User(AbstractBaseUser,PermissionsMixin):
     nombre = models.CharField('Nombres', max_length=100, blank=True, null=True)
@@ -31,6 +32,9 @@ class User(AbstractBaseUser,PermissionsMixin):
     usuario = models.CharField(max_length=200, unique=True)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
+    rol = models.CharField(max_length=20,
+                            choices=[('Encargado', 'Encargado'),('Desarrollador', 'Desarrollador'),('Administrador', 'Administrador')],
+                            default='Encargado')
     historical = HistoricalRecords()
     objects = UserManager()
 

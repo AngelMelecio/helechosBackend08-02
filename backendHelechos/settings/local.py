@@ -24,8 +24,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
         'USER': 'root',
-        'PASSWORD': '5194',
-        'NAME':'helechosData',
+        'PASSWORD': 'cesaradmin',
+        'NAME':'helechosData2',
         'OPTIONS':{
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }

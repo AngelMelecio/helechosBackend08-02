@@ -22,7 +22,7 @@ class UserViewSet(viewsets.GenericViewSet):
     def get_queryset(self):
         if self.queryset is None:
             self.queryset = self.model.objects\
-                            .values('id', 'usuario', 'correo', 'apellidos', 'nombre', 'is_active', 'is_staff')
+                            .values('id', 'usuario', 'correo', 'apellidos', 'nombre', 'is_active', 'is_staff','rol')
         return self.queryset
 
     @action(detail=True, methods=['post'])
