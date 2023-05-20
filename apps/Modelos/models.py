@@ -7,6 +7,8 @@ class Modelo(models.Model):
     nombre = models.CharField(max_length=200, null=True, blank=True)
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, null=True, blank=True)
-    
+    fechaCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+
     def __str__(self):
-        return "{} {}".format(self.nombre, self.cliente)
+        return "{} {} {}".format(self.nombre, self.cliente, self.fechaCreacion)
