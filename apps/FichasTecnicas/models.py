@@ -31,8 +31,8 @@ class FichaTecnica(models.Model):
     jalones = models.JSONField(null=True, blank=True)
     economisadores = models.JSONField(null=True, blank=True)
     otros = models.TextField(null=True, blank=True)
-    fechaCreacion = models.DateField(null=True, blank=True)
-    fechaUltimaEdicion = models.DateField(null=True, blank=True)
+    fechaCreacion = models.DateTimeField( auto_now_add=True, null=True, blank=True)
+    fechaUltimaEdicion = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return "{} {}".format(self.modelo ,self.nombre)
