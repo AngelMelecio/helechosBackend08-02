@@ -13,8 +13,8 @@ class FichaTecnica(models.Model):
     modelo = models.ForeignKey(
         Modelo, on_delete=models.DO_NOTHING, related_name='modelo')
     nombre = models.CharField(max_length=200, null=True, blank=True)
-    archivoPrograma = models.FileField(
-        upload_to=upload_to, null=True, blank=True)
+    nombrePrograma = models.CharField(
+        max_length=100, null=True, blank=True)
     fotografia = models.ImageField(upload_to=upload_to, null=True, blank=True)
     talla = models.CharField(max_length=25, null=True, blank=True)
     maquinaTejido = models.ForeignKey(
