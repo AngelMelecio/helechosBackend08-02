@@ -11,3 +11,10 @@ class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cliente
         fields = '__all__'
+
+class ClienteSerializerSimple(serializers.ModelSerializer):
+ 
+    # create a meta class
+    class Meta:
+        model = Cliente
+        fields = ('idCliente','nombre')
