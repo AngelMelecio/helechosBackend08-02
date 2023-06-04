@@ -16,3 +16,8 @@ class FichaTecnicaSerializerListar(serializers.ModelSerializer):
     class Meta:
         model = FichaTecnica
         fields = '__all__'
+
+class FichaTecnicaSerializerSimple(serializers.ModelSerializer):
+    class Meta:
+        model = FichaTecnica
+        fields = ('idFichaTecnica','nombre','fotografia','talla')
