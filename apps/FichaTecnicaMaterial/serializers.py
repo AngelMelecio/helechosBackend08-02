@@ -13,4 +13,4 @@ class FichaTecnicaMaterialSerializerListar(serializers.ModelSerializer):
     material = MaterialSerializerListar()
     class Meta:
         model = FichaTecnicaMaterial
-        fields = '__all__'
+        fields = ('id','material')

@@ -35,4 +35,4 @@ class FichaTecnica(models.Model):
     fechaUltimaEdicion = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return "{} {}".format(self.modelo ,self.nombre)
+        return "{} {} {}".format(self.idFichaTecnica,self.modelo ,self.nombre)

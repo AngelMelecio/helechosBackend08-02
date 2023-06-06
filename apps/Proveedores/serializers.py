@@ -6,8 +6,12 @@ from apps.Proveedores.models import Proveedor
 
 # create a serializer class
 class ProveedorSerializer(serializers.ModelSerializer):
- 
-    # create a meta class
     class Meta:
         model = Proveedor
         fields = '__all__'
+
+class ProveedorSerializerSimple(serializers.ModelSerializer):
+    class Meta:
+        model = Proveedor
+        fields = ('idProveedor','nombre')
+
