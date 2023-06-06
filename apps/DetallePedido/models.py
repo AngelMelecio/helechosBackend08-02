@@ -10,6 +10,8 @@ class DetallePedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     cantidades = models.JSONField(null=True,blank=True)
     rutaProduccion= models.JSONField(null=True, blank=True)
+    colores= models.JSONField(null=True, blank=True)
+    
 
 
     def __str__(self):
