@@ -4,8 +4,12 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Pedidos.models import Pedido
 from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar
+from apps.DetallePedido.serializers import DetallePedidoSerializer
+from apps.Produccion.serializers import ProduccionSerializer
 from rest_framework.parsers import MultiPartParser, JSONParser
+from django.db import transaction
 
+@transaction.atomic
 @api_view(['GET','POST'])
 @parser_classes([MultiPartParser , JSONParser])
 def pedido_api_view(request):
@@ -17,16 +21,97 @@ def pedido_api_view(request):
 
     # Create
     elif request.method == 'POST':
-        pedido_serializer = PedidoSerializer(data=request.data)
-        if pedido_serializer.is_valid():
+        
+        # Separar el pedido de los detalles
+        pedido = request.data.copy()
+        detalles = pedido.get('detalles')
+        pedido.pop('detalles')
+        
+        # Guardar el estado actual
+        sid = transaction.savepoint()
+        success = True
+        errors = []
+
+        pedido_serializer = PedidoSerializer(data=pedido)
+        
+        if pedido_serializer.is_valid(): 
             pedido_serializer.save()
-            pedidos = Pedido.objects.all()
-            pedido_serializer = PedidoSerializerListar(pedidos,many=True)
+            newPedidoId = pedido_serializer.data.get('idPedido')
+            
+            for detalle in detalles:
+                detalle['pedido'] = newPedidoId
+                detallePedido_serializer = DetallePedidoSerializer(data=detalle)
+                if detallePedido_serializer.is_valid():
+                    detallePedido_serializer.save()
+                    newDetalleId = detallePedido_serializer.data['idDetallePedido']
+                    cantidades = detalle.get('cantidades')
+
+                    for cantidad in cantidades:
+                        paquetes = cantidad['cantidad'] / cantidad['paquete']
+                        ultimoPaquete = cantidad['cantidad'] % cantidad['paquete']
+                        
+                        for i in range(0, int(paquetes)):
+                            etiqueta = {
+                                "detallePedido": newDetalleId,
+                                "numEtiqueta": i+1,
+                                "cantidad": cantidad['paquete'],
+                                "estacionActual": {"tejido":"corte"},
+                                "tejido":"0",
+                                "plancha":"-1",
+                                "corte":"0",
+                                "calidad":"0",
+                                "empaque":"0",
+                                "entrega":"0"
+                            }
+                            produccion_serializer = ProduccionSerializer(data=etiqueta)
+                            if produccion_serializer.is_valid():
+                                produccion_serializer.save()
+                            else:
+                                errors.append('No se pudieron generar las etiquetas, error en la solicitud.')
+                                success = False
+
+                        if ultimoPaquete > 0:
+                            etiqueta = {
+                                "detallePedido": newDetalleId,
+                                "numEtiqueta": int(paquetes)+1,
+                                "cantidad": ultimoPaquete,
+                                "estacionActual": {"tejido":"corte"},
+                                "tejido":"0",
+                                "plancha":"-1",
+                                "corte":"0",
+                                "calidad":"0",
+                                "empaque":"0",
+                                "entrega":"0"
+                            }
+                            produccion_serializer = ProduccionSerializer(data=etiqueta)
+                            if produccion_serializer.is_valid():
+                                produccion_serializer.save()
+                            else:
+                                errors.append('No se pudo crear pedido 1, error en la solicitud.')
+                                success = False
+                else:
+                    print(detallePedido_serializer.errors)
+                    errors.append('No se pudo crear pedido 2, error en la solicitud.')
+                    success = False
+        else:
+            # append new error in errors array
+            errors.append('No se pudo crear pedido 3, error en la solicitud.')
+            success = False
+
+        
+        if success :
+            transaction.savepoint_commit(sid)
             return Response( {
                 'message':'¡Pedido creado correctamente!',
-                'pedidos': pedido_serializer.data
+                'pedido': pedido_serializer.data
             }, status=status.HTTP_201_CREATED )
-        return Response( pedido_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+        else:
+            transaction.savepoint_rollback(sid)
+            return Response( {
+                "message": 'Error al crear pedido',
+                "errors": errors
+            }, status=status.HTTP_400_BAD_REQUEST )
+    
 
 @api_view(['GET','PUT','DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
