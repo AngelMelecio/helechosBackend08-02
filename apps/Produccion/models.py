@@ -11,7 +11,7 @@ class Produccion(models.Model):
         DetallePedido, on_delete=models.DO_NOTHING)
     numEtiqueta=models.IntegerField(null=False, blank=False)
     cantidad=models.IntegerField(null=False, blank=False)
-    estacionActual= models.JSONField(null=False, blank=False)
+    estacionActual= models.CharField(max_length=50, null=True, blank=True)
     #Tejido
     tejido =  models.CharField(max_length=5,
                             choices=[('-1', '-1'),('0', '0'),('1', '1')],
