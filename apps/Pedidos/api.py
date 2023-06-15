@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Pedidos.models import Pedido
+from apps.Produccion.models import Produccion
 from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar
 from apps.DetallePedido.serializers import DetallePedidoSerializer
 from apps.Produccion.serializers import ProduccionSerializer
@@ -17,8 +18,24 @@ def pedido_api_view(request):
     if request.method == 'GET':
         pedidos = Pedido.objects.all()
         pedido_serializer = PedidoSerializerListar(pedidos,many=True)
+        for pedido in pedido_serializer.data:
+            id=pedido.get('idPedido')
+            ready = Produccion.objects.filter(detallePedido__pedido__idPedido=id, estacionActual='empacado').count()
+            goal = Produccion.objects.filter(detallePedido__pedido__idPedido=id).count()
+            progress=int((ready*100)/goal)
+            color_ranges = [
+                (0, 25, '#9b1b1b'),
+                (26, 50, '#ea580c'),
+                (51, 75, '#eab308'),
+                (76, 100, '#15803d'),
+            ]
+            color = '#ffffff'
+            for lower_bound, upper_bound, associated_color in color_ranges:
+                if lower_bound <= progress <= upper_bound:
+                    color = associated_color
+                    break
+            pedido['progressBar'] = {"progress":progress,"goal":100,"color":color}
         return Response( pedido_serializer.data, status=status.HTTP_200_OK )
-
     # Create
     elif request.method == 'POST':
         
@@ -55,13 +72,9 @@ def pedido_api_view(request):
                                 "detallePedido": newDetalleId,
                                 "numEtiqueta": i+1,
                                 "cantidad": cantidad['paquete'],
-                                "estacionActual": {"tejido":"corte"},
-                                "tejido":"0",
-                                "plancha":"-1",
-                                "corte":"0",
-                                "calidad":"0",
-                                "empaque":"0",
-                                "entrega":"0"
+                                "estacionActual":"creada",
+                                "tallaReal":cantidad['talla']
+                                
                             }
                             produccion_serializer = ProduccionSerializer(data=etiqueta)
                             if produccion_serializer.is_valid():
@@ -75,13 +88,8 @@ def pedido_api_view(request):
                                 "detallePedido": newDetalleId,
                                 "numEtiqueta": int(paquetes)+1,
                                 "cantidad": ultimoPaquete,
-                                "estacionActual": {"tejido":"corte"},
-                                "tejido":"0",
-                                "plancha":"-1",
-                                "corte":"0",
-                                "calidad":"0",
-                                "empaque":"0",
-                                "entrega":"0"
+                                "estacionActual":"creada",
+                                "tallaReal":cantidad['talla']
                             }
                             produccion_serializer = ProduccionSerializer(data=etiqueta)
                             if produccion_serializer.is_valid():

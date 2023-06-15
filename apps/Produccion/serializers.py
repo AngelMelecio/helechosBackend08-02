@@ -12,17 +12,6 @@ class ProduccionSerializer(serializers.ModelSerializer):
 class ProduccionSerializerListar(serializers.ModelSerializer):
     #General
     detallePedido = DetallePedidoSerializerListar()
-    #Empleados
-    tejedor = EmpleadoSerializer()
-    planchador = EmpleadoSerializer()
-    cortador = EmpleadoSerializer()
-    inspector = EmpleadoSerializer()
-    empacador = EmpleadoSerializer()
-    repartidor = EmpleadoSerializer()
-    #Maquinas
-    maquinaTejidoProduccion=MaquinaSerializer()
-    maquinaPlanchaProduccion=MaquinaSerializer()
-    maquinaCorteProduccion=MaquinaSerializer()
     class Meta:
         model = Produccion
         fields = '__all__'

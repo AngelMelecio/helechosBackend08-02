@@ -15,4 +15,4 @@ class DetallePedido(models.Model):
 
 
     def __str__(self):
-            return "{}".format(self.fichaTecnica.talla)
+            return "{} {}".format(self.pedido.idPedido,self.fichaTecnica.talla)
