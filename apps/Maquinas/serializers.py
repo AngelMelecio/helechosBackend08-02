@@ -10,3 +10,8 @@ class MaquinaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Maquina
         fields = '__all__'
+
+class MaquinaSerializerToRegistros(serializers.ModelSerializer):
+    class Meta:
+        model = Maquina
+        fields = ('numero','linea','departamento')
