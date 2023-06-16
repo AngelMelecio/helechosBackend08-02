@@ -38,12 +38,14 @@ def pedido_api_view(request):
         return Response( pedido_serializer.data, status=status.HTTP_200_OK )
     # Create
     elif request.method == 'POST':
-        
+    
         # Separar el pedido de los detalles
         pedido = request.data.copy()
         detalles = pedido.get('detalles')
         pedido.pop('detalles')
         
+        
+
         # Guardar el estado actual
         sid = transaction.savepoint()
         success = True
@@ -106,7 +108,7 @@ def pedido_api_view(request):
             errors.append('No se pudo crear pedido 3, error en la solicitud.')
             success = False
 
-        
+        print('ERRORES: ', errors)
         if success :
             transaction.savepoint_commit(sid)
             return Response( {
