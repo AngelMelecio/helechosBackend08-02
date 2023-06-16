@@ -76,12 +76,12 @@ def detallePedido_api_view(request):
             """
             detallesPedido = DetallePedido.objects.all()
             detallePedido_serializer = DetallePedidoSerializerListar(detallesPedido,many=True)
-            """
-
             return Response( {
                 'message':'Detalle de pedido asignado correctamente!',
                 'detallesPedido': detallePedido_serializer.data
             }, status=status.HTTP_201_CREATED )
+            """
+
         
         else:
             success = False
