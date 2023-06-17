@@ -9,7 +9,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db import transaction
 
 @transaction.atomic
-@api_view(['POST','GET'])
+@api_view(['POST'])
 @parser_classes([MultiPartParser, JSONParser])
 def ficha_tecnica_material_post_api_view(request):
     #Post
@@ -39,7 +39,7 @@ def ficha_tecnica_material_post_api_view(request):
 
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
-def ficha_tecnica_material_get_one_api_view(request, pkFichaTecnica):
+def materiales_by_fichaTecnica(request, pkFichaTecnica):
     # Queryset
     fichaTecnicaMaterial = FichaTecnicaMaterial.objects.filter(fichaTecnica=pkFichaTecnica)
     # Validacion
