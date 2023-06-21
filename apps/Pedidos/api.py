@@ -45,7 +45,6 @@ def pedido_api_view(request):
         pedido.pop('detalles')
         
         
-
         # Guardar el estado actual
         sid = transaction.savepoint()
         success = True
@@ -76,7 +75,6 @@ def pedido_api_view(request):
                                 "cantidad": cantidad['paquete'],
                                 "estacionActual":"creada",
                                 "tallaReal":cantidad['talla']
-                                
                             }
                             produccion_serializer = ProduccionSerializer(data=etiqueta)
                             if produccion_serializer.is_valid():
@@ -97,15 +95,15 @@ def pedido_api_view(request):
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
                             else:
-                                errors.append('No se pudo crear pedido 1, error en la solicitud.')
+                                errors.append('No se pudo generar la última etiqueta, error en la solicitud.')
                                 success = False
                 else:
                     print(detallePedido_serializer.errors)
-                    errors.append('No se pudo crear pedido 2, error en la solicitud.')
+                    errors.append('No se pudo crear el detalle del pedido, error en la solicitud.')
                     success = False
         else:
             # append new error in errors array
-            errors.append('No se pudo crear pedido 3, error en la solicitud.')
+            errors.append('No se pudo crear pedido, error en la solicitud.')
             success = False
 
         print('ERRORES: ', errors)

@@ -10,7 +10,7 @@ class Registro(models.Model):
     maquina = models.ForeignKey(Maquina, on_delete=models.CASCADE,null=True,blank=True)
     produccion = models.ForeignKey(Produccion, on_delete=models.CASCADE,null=True,blank=True)
     turno = models.CharField(max_length=200,null=True, blank=True)
-    fechaCaptura=models.DateTimeField(null=True, blank=True)
+    fechaCaptura=models.DateTimeField(auto_now_add=True, null=True, blank=True)
     departamento = models.CharField(max_length=20,
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
