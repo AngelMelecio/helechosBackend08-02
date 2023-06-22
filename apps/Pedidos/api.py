@@ -4,8 +4,9 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Pedidos.models import Pedido
 from apps.Produccion.models import Produccion
-from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar
-from apps.DetallePedido.serializers import DetallePedidoSerializer
+from apps.DetallePedido.models import DetallePedido
+from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar,PedidoSerializerGetOne
+from apps.DetallePedido.serializers import DetallePedidoSerializer,DetallePedidoSerializerListar,DetallePedidoSerializerGetPedido
 from apps.Produccion.serializers import ProduccionSerializer
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.db import transaction
@@ -20,7 +21,7 @@ def pedido_api_view(request):
         pedido_serializer = PedidoSerializerListar(pedidos,many=True)
         for pedido in pedido_serializer.data:
             id=pedido.get('idPedido')
-            ready = Produccion.objects.filter(detallePedido__pedido__idPedido=id, estacionActual='empacado').count()
+            ready = Produccion.objects.filter(detallePedido__pedido__idPedido=id, estacionActual='empacado'or'entregado').count()
             goal = Produccion.objects.filter(detallePedido__pedido__idPedido=id).count()
             progress=int((ready*100)/goal)
             color_ranges = [
@@ -124,40 +125,54 @@ def pedido_api_view(request):
 @api_view(['GET','PUT','DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
 def pedido_detail_api_view(request, pk=None):
-    # Queryset
-    pedido = Pedido.objects.filter( idPedido = pk ).first()
+
+    #detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
     
-    # Validacion
-    if pedido:
-        # Retrieve
-        if request.method == 'GET':
-            pedido_serializer =  PedidoSerializerListar(pedido)
-            return Response( pedido_serializer.data, status=status.HTTP_200_OK )
+    if request.method == 'GET':
+        objToResponse = {}
+        pedido= Pedido.objects.filter( idPedido = pk ).first()
+        pedido_serializer = PedidoSerializerGetOne(pedido)
         
-        # Update
-        elif request.method == 'PUT':
-            pedido_serializer = PedidoSerializer(pedido, data = request.data)
-            if pedido_serializer.is_valid():
-                pedido_serializer.save()
-                pedidos = Pedido.objects.all()
-                pedido_serializer =PedidoSerializerListar(pedidos,many=True)
-                return Response( {
-                    'message':'¡Pedido actualizado correctamente!',
-                    'pedidos': pedido_serializer.data
-                }, status=status.HTTP_200_OK )
-            print('ERROR', pedido_serializer.errors)
-            return Response(pedido_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
+
+        detallePedido_serializer =  DetallePedidoSerializerGetPedido(detallesPedido,many=True)
+        for detalle in detallePedido_serializer.data:
+
+            objDetalleToResponse = {}
+            objDetalleToResponse['idFichaTecnica'] = detalle.get('fichaTecnica').get('idFichaTecnica')
+            objDetalleToResponse['nombre'] = detalle.get('fichaTecnica').get('nombre')
+            objDetalleToResponse['fotografia'] = detalle.get('fichaTecnica').get('fotografia')
+            objDetalleToResponse['talla'] = detalle.get('fichaTecnica').get('talla')
+
+            
+            idDePe = detalle['idDetallePedido']
+            arregloCantidades = detalle['cantidades']
+            estadoDeProduccion=[]
+            j=0
+            for infoTalla in arregloCantidades:
+                talla=infoTalla['talla']
+                aux=['tejido','plancha','corte','calidad','empacado']
+                i=0
+                production=[]
+                for dpto in aux:
+                    production.insert(i,[dpto,Produccion.objects.filter(detallePedido__idDetallePedido=idDePe,tallaReal=talla,estacionActual=dpto).count()])
+                    i=i+1
+                objToInsert={"tittle":"Progreso de etiquetas talla "+talla,"data":production}
+                estadoDeProduccion.insert(j,objToInsert)
+            detalle['progreso']=estadoDeProduccion   
+
+
+
+        objToResponse['pedido'] = pedido_serializer.data.get('idPedido')
+        objToResponse['modelo'] = pedido_serializer.data.get('modelo').get('idModelo')
+        objToResponse['cliente'] = pedido_serializer.data.get('modelo').get('cliente')
+        objToResponse['fechaRegistro'] = pedido_serializer.data.get('fechaRegistro')
+        objToResponse['fechaEntrega'] = pedido_serializer.data.get('fechaEntrega')
+        objToResponse['detalles'] =  objDetalleToResponse
         
-        # Delete
-        elif request.method == 'DELETE':
-            pedido = Pedido.objects.filter( idPedido = pk ).first()
-            pedido.delete()
-            return Response(
-                {'message':'¡Pedido eliminado correctamente!'}, 
-                status=status.HTTP_200_OK
-            )
-    return Response(
-        {'message':'No se encontró el pedido'}, 
-        status=status.HTTP_400_BAD_REQUEST
-    )
- 
+
+      
+    return Response(objToResponse, status=status.HTTP_200_OK ) 
+    
+    
+   
