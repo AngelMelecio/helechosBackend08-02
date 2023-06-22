@@ -12,3 +12,8 @@ class ModeloSerializerListar(serializers.ModelSerializer):
     class Meta:
         model = Modelo
         fields = '__all__'
+
+class ModeloSerializerGetPedido(serializers.ModelSerializer):
+    class Meta:
+        model = Modelo
+        fields = ('idModelo','cliente')

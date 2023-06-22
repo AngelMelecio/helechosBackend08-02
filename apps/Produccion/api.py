@@ -62,4 +62,21 @@ def produccion_detail_api_view(request, pk=None):
         {'message':'No se encontró el registro de producción'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
- 
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def get_produccion_with_registros_by_detallePedido(request, pk=None):#idDetalleProduccion
+    # Queryset
+    etiquetas = Produccion.objects.filter( idProduccion = pk ).first()
+    
+    # Validacion
+    if etiquetas:
+        # Retrieve
+        if request.method == 'GET':
+            produccion_serializer =  ProduccionSerializerListar(registroProduccion)
+            return Response( produccion_serializer.data, status=status.HTTP_200_OK )
+    
+    return Response(
+        {'message':'No se encontró el registro de producción'}, 
+        status=status.HTTP_400_BAD_REQUEST
+    )
