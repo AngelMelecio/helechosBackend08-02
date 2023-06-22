@@ -13,3 +13,9 @@ class MaterialSerializerListar(serializers.ModelSerializer):
     class Meta:
         model = Material
         fields = '__all__'
+
+class MaterialSerializerGetPedido(serializers.ModelSerializer):
+    proveedor = ProveedorSerializerSimple()
+    class Meta:
+        model = Material
+        fields = ('proveedor','color','tenida','codigoColor')
