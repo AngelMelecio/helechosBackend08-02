@@ -5,6 +5,8 @@ from rest_framework.decorators import parser_classes
 from apps.Pedidos.models import Pedido
 from apps.Produccion.models import Produccion
 from apps.DetallePedido.models import DetallePedido
+from apps.FichaTecnicaMaterial.models import FichaTecnicaMaterial
+from apps.FichaTecnicaMaterial.serializers import FichaMaterialesSerializerGetPedido
 from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar,PedidoSerializerGetOne
 from apps.DetallePedido.serializers import DetallePedidoSerializer,DetallePedidoSerializerListar,DetallePedidoSerializerGetPedido
 from apps.Produccion.serializers import ProduccionSerializer
@@ -37,6 +39,7 @@ def pedido_api_view(request):
                     break
             pedido['progressBar'] = {"progress":progress,"goal":100,"color":color}
         return Response( pedido_serializer.data, status=status.HTTP_200_OK )
+    
     # Create
     elif request.method == 'POST':
     
@@ -135,20 +138,24 @@ def pedido_detail_api_view(request, pk=None):
         
         detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
 
+
         detallePedido_serializer =  DetallePedidoSerializerGetPedido(detallesPedido,many=True)
+        listObjDetalleToResponse = []
+        j=0
         for detalle in detallePedido_serializer.data:
 
             objDetalleToResponse = {}
-            objDetalleToResponse['idFichaTecnica'] = detalle.get('fichaTecnica').get('idFichaTecnica')
+            idFicha = detalle.get('fichaTecnica').get('idFichaTecnica')
+            objDetalleToResponse['idFichaTecnica'] = idFicha
             objDetalleToResponse['nombre'] = detalle.get('fichaTecnica').get('nombre')
             objDetalleToResponse['fotografia'] = detalle.get('fichaTecnica').get('fotografia')
             objDetalleToResponse['talla'] = detalle.get('fichaTecnica').get('talla')
+            objDetalleToResponse['ruta'] = detalle.get('rutaProduccion')
 
-            
+
+            #cantidades tuneadas con progreso
             idDePe = detalle['idDetallePedido']
             arregloCantidades = detalle['cantidades']
-            estadoDeProduccion=[]
-            j=0
             for infoTalla in arregloCantidades:
                 talla=infoTalla['talla']
                 aux=['tejido','plancha','corte','calidad','empacado']
@@ -158,21 +165,40 @@ def pedido_detail_api_view(request, pk=None):
                     production.insert(i,[dpto,Produccion.objects.filter(detallePedido__idDetallePedido=idDePe,tallaReal=talla,estacionActual=dpto).count()])
                     i=i+1
                 objToInsert={"tittle":"Progreso de etiquetas talla "+talla,"data":production}
-                estadoDeProduccion.insert(j,objToInsert)
-            detalle['progreso']=estadoDeProduccion   
+                infoTalla['progreso']=objToInsert
+            
+            objDetalleToResponse['cantidades'] = detalle.get('cantidades')
+            listObjDetalleToResponse.insert(j,objDetalleToResponse)
+            j=j+1
 
+            # Poliesters
 
+            materiales=FichaTecnicaMaterial.objects.filter(fichaTecnica=idFicha , material__tipo='Poliester')
+            materiales_serializer = FichaMaterialesSerializerGetPedido(materiales,many=True)
+            
+            materiales = materiales_serializer.data
+            objPoliestersToResponse = []
 
+            
+            for material in materiales:
+                poliester = {}
+                poliester['color'] = material['material']['color']
+                poliester['tenida'] = material['material']['tenida']
+                poliester['codigoColor'] = material['material']['codigoColor']
+                poliester['proveedor'] = material['material']['proveedor']['nombre']
+                objPoliestersToResponse.append(poliester)
+            
+
+            objDetalleToResponse['poliesters'] = objPoliestersToResponse
+
+            
         objToResponse['pedido'] = pedido_serializer.data.get('idPedido')
         objToResponse['modelo'] = pedido_serializer.data.get('modelo').get('idModelo')
         objToResponse['cliente'] = pedido_serializer.data.get('modelo').get('cliente')
         objToResponse['fechaRegistro'] = pedido_serializer.data.get('fechaRegistro')
         objToResponse['fechaEntrega'] = pedido_serializer.data.get('fechaEntrega')
-        objToResponse['detalles'] =  objDetalleToResponse
+        objToResponse['detalles'] =   listObjDetalleToResponse
         
-
       
-    return Response(objToResponse, status=status.HTTP_200_OK ) 
-    
-    
+    return Response(objToResponse, status=status.HTTP_200_OK )   
    
