@@ -18,4 +18,4 @@ class MaterialSerializerGetPedido(serializers.ModelSerializer):
     proveedor = ProveedorSerializerSimple()
     class Meta:
         model = Material
-        fields = ('proveedor','color','tenida','codigoColor')
+        fields = ('proveedor','color','tenida','codigoColor','tipo')
