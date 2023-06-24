@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.Pedidos.models import Pedido
 from apps.Modelos.serializers import ModeloSerializerListar,ModeloSerializerGetPedido
+from apps.DetallePedido.serializers import DetallePedidoSerializerGetPedido
 
 class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +16,7 @@ class PedidoSerializerListar(serializers.ModelSerializer):
 
 class PedidoSerializerGetOne(serializers.ModelSerializer):
     modelo = ModeloSerializerGetPedido()
+    detalles = DetallePedidoSerializerGetPedido( source='detallepedido_set', many=True, read_only=True )
     class Meta:
         model = Pedido
         fields = '__all__'

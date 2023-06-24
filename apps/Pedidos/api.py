@@ -7,25 +7,29 @@ from apps.Produccion.models import Produccion
 from apps.DetallePedido.models import DetallePedido
 from apps.FichaTecnicaMaterial.models import FichaTecnicaMaterial
 from apps.FichaTecnicaMaterial.serializers import FichaMaterialesSerializerGetPedido
-from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar,PedidoSerializerGetOne
-from apps.DetallePedido.serializers import DetallePedidoSerializer,DetallePedidoSerializerListar,DetallePedidoSerializerGetPedido
+from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar, PedidoSerializerGetOne
+from apps.DetallePedido.serializers import DetallePedidoSerializer, DetallePedidoSerializerListar, DetallePedidoSerializerGetPedido
 from apps.Produccion.serializers import ProduccionSerializer
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.db import transaction
+from django.db.models import Sum
+
 
 @transaction.atomic
-@api_view(['GET','POST'])
-@parser_classes([MultiPartParser , JSONParser])
+@api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser, JSONParser])
 def pedido_api_view(request):
     # list
     if request.method == 'GET':
         pedidos = Pedido.objects.all()
-        pedido_serializer = PedidoSerializerListar(pedidos,many=True)
+        pedido_serializer = PedidoSerializerListar(pedidos, many=True)
         for pedido in pedido_serializer.data:
-            id=pedido.get('idPedido')
-            ready = Produccion.objects.filter(detallePedido__pedido__idPedido=id, estacionActual='empacado'or'entregado').count()
-            goal = Produccion.objects.filter(detallePedido__pedido__idPedido=id).count()
-            progress=int((ready*100)/goal)
+            id = pedido.get('idPedido')
+            ready = Produccion.objects.filter(
+                detallePedido__pedido__idPedido=id, estacionActual='empacado' or 'entregado').count()
+            goal = Produccion.objects.filter(
+                detallePedido__pedido__idPedido=id).count()
+            progress = int((ready*100)/goal)
             color_ranges = [
                 (0, 25, '#9b1b1b'),
                 (26, 50, '#ea580c'),
@@ -37,107 +41,137 @@ def pedido_api_view(request):
                 if lower_bound <= progress <= upper_bound:
                     color = associated_color
                     break
-            pedido['progressBar'] = {"progress":progress,"goal":100,"color":color}
-        return Response( pedido_serializer.data, status=status.HTTP_200_OK )
-    
+            pedido['progressBar'] = {
+                "progress": progress, "goal": 100, "color": color}
+        return Response(pedido_serializer.data, status=status.HTTP_200_OK)
+
     # Create
     elif request.method == 'POST':
-    
-        # Separar el pedido de los detalles
+
+        # Separación pedido / detalles
         pedido = request.data.copy()
         detalles = pedido.get('detalles')
         pedido.pop('detalles')
-        
-        
-        # Guardar el estado actual
+
+        # Guardar el estado actual de la transacción
         sid = transaction.savepoint()
         success = True
         errors = []
 
         pedido_serializer = PedidoSerializer(data=pedido)
-        
-        if pedido_serializer.is_valid(): 
+        if pedido_serializer.is_valid():
+
+            # Guardar el pedido y obtener el nuevo id
             pedido_serializer.save()
             newPedidoId = pedido_serializer.data.get('idPedido')
-            
+
             for detalle in detalles:
                 detalle['pedido'] = newPedidoId
-                detallePedido_serializer = DetallePedidoSerializer(data=detalle)
+                detallePedido_serializer = DetallePedidoSerializer(
+                    data=detalle)
                 if detallePedido_serializer.is_valid():
+
+                    # Guardar el detalle del pedido y obtener el nuevo id
                     detallePedido_serializer.save()
                     newDetalleId = detallePedido_serializer.data['idDetallePedido']
-                    cantidades = detalle.get('cantidades')
 
+                    # Iterar sobre las cantidades de cada detalle
+                    cantidades = detalle.get('cantidades')
                     for cantidad in cantidades:
                         paquetes = cantidad['cantidad'] / cantidad['paquete']
                         ultimoPaquete = cantidad['cantidad'] % cantidad['paquete']
-                        
+
                         for i in range(0, int(paquetes)):
                             etiqueta = {
                                 "detallePedido": newDetalleId,
                                 "numEtiqueta": i+1,
                                 "cantidad": cantidad['paquete'],
-                                "estacionActual":"creada",
-                                "tallaReal":cantidad['talla']
+                                "estacionActual": "creada",
+                                "tallaReal": cantidad['talla']
                             }
-                            produccion_serializer = ProduccionSerializer(data=etiqueta)
+
+                            # Guardar la etiqueta
+                            produccion_serializer = ProduccionSerializer(
+                                data=etiqueta)
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
                             else:
-                                errors.append('No se pudieron generar las etiquetas, error en la solicitud.')
+                                errors.append(
+                                    'No se pudieron generar las etiquetas, error en la solicitud.')
                                 success = False
 
+                        # Guardar la última etiqueta
                         if ultimoPaquete > 0:
                             etiqueta = {
                                 "detallePedido": newDetalleId,
                                 "numEtiqueta": int(paquetes)+1,
                                 "cantidad": ultimoPaquete,
-                                "estacionActual":"creada",
-                                "tallaReal":cantidad['talla']
+                                "estacionActual": "creada",
+                                "tallaReal": cantidad['talla']
                             }
-                            produccion_serializer = ProduccionSerializer(data=etiqueta)
+                            produccion_serializer = ProduccionSerializer(
+                                data=etiqueta)
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
                             else:
-                                errors.append('No se pudo generar la última etiqueta, error en la solicitud.')
+                                errors.append(
+                                    'No se pudo generar la última etiqueta, error en la solicitud.')
                                 success = False
                 else:
                     print(detallePedido_serializer.errors)
-                    errors.append('No se pudo crear el detalle del pedido, error en la solicitud.')
+                    errors.append(
+                        'No se pudo crear el detalle del pedido, error en la solicitud.')
                     success = False
         else:
-            # append new error in errors array
             errors.append('No se pudo crear pedido, error en la solicitud.')
             success = False
 
-        print('ERRORES: ', errors)
-        if success :
+        # print('ERRORES: ', errors)
+        if success:
             transaction.savepoint_commit(sid)
-            return Response( {
-                'message':'¡Pedido creado correctamente!',
+            return Response({
+                'message': '¡Pedido creado correctamente!',
                 'pedido': pedido_serializer.data
-            }, status=status.HTTP_201_CREATED )
+            }, status=status.HTTP_201_CREATED)
         else:
             transaction.savepoint_rollback(sid)
-            return Response( {
+            return Response({
                 "message": 'Error al crear pedido',
                 "errors": errors
-            }, status=status.HTTP_400_BAD_REQUEST )
-    
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','PUT','DELETE'])
+
+@api_view(['GET', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
 def pedido_detail_api_view(request, pk=None):
-
-    #detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
-    
+    # queryset
     if request.method == 'GET':
-        objToResponse = {}
-        pedido= Pedido.objects.filter( idPedido = pk ).first()
-        pedido_serializer = PedidoSerializerGetOne(pedido)
         
-        detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
+        # Obtener el pedido con detalles serializados
+        pedido = Pedido.objects.filter(idPedido=pk).first()
+        pedido_serializer = PedidoSerializerGetOne(pedido)
+        detalles = pedido_serializer.data.get('detalles')
 
+        for detalle in detalles:
+            idDetalle = detalle.get('idDetallePedido')
+            cantidades = detalle.get('cantidades')
+            for cantidad in cantidades:
+                
+                # Obtener el progreso de cada talla
+                progreso_estacion = Produccion.objects \
+                    .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla']) \
+                    .values('estacionActual') \
+                    .annotate(cantidad=Sum('cantidad'))
+                
+                # Devolverlo en una matriz
+                cantidad['progreso'] = []
+                for estacion in progreso_estacion:
+                    cantidad['progreso'].append(
+                        [estacion['estacionActual'], estacion['cantidad']])
+
+        """
+        # objToResponse = {}
+        detallesPedido = DetallePedido.objects.filter( pedido__idPedido = pk )
 
         detallePedido_serializer =  DetallePedidoSerializerGetPedido(detallesPedido,many=True)
         listObjDetalleToResponse = []
@@ -197,8 +231,7 @@ def pedido_detail_api_view(request, pk=None):
         objToResponse['cliente'] = pedido_serializer.data.get('modelo').get('cliente')
         objToResponse['fechaRegistro'] = pedido_serializer.data.get('fechaRegistro')
         objToResponse['fechaEntrega'] = pedido_serializer.data.get('fechaEntrega')
-        objToResponse['detalles'] =   listObjDetalleToResponse
-        
-      
-    return Response(objToResponse, status=status.HTTP_200_OK )   
-   
+        #objToResponse['detalles'] =   listObjDetalleToResponse
+        """
+
+    return Response(pedido_serializer.data, status=status.HTTP_200_OK)
