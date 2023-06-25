@@ -30,7 +30,7 @@ class FichaTecnicaSerializerGetPedido(serializers.ModelSerializer):
     
     class Meta:
         model = FichaTecnica
-        fields = ('idFichaTecnica','nombre','fotografia','talla','materiales')
+        fields = ('idFichaTecnica','nombre','fotografia','talla','materiales','fechaCreacion','fechaUltimaEdicion')
 
     def get_materiales(self, obj):
         fichas_materiales = obj.fichatecnicamaterial_set.filter(material__tipo='Poliester')
