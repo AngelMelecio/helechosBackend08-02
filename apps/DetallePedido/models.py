@@ -11,7 +11,5 @@ class DetallePedido(models.Model):
     cantidades = models.JSONField(null=True,blank=True)
     rutaProduccion= models.JSONField(null=True, blank=True)
     
-
-
     def __str__(self):
             return "{} {}".format(self.pedido.idPedido,self.fichaTecnica.talla)

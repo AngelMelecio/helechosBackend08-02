@@ -4,7 +4,13 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.FichasTecnicas.models import FichaTecnica
 from apps.FichaTecnicaMaterial.models import FichaTecnicaMaterial
-from apps.FichasTecnicas.serializers import FichaTecnicaSerializer, FichaTecnicaSerializerListar,FichaTecnicaSerializerSimple
+
+from apps.FichasTecnicas.serializers \
+    import FichaTecnicaSerializer, \
+    FichaTecnicaSerializerListar,\
+    FichaTecnicaSerializerSimple, \
+    FichaTecnicaSerializerGetPedido
+
 from apps.FichaTecnicaMaterial.serializers import FichaTecnicaMaterialSerializerListar
 from rest_framework.parsers import MultiPartParser, JSONParser
 # crear una api para listar las fichas tecnicas en base al modelo
@@ -102,3 +108,12 @@ def fichas_tecnicas_with_materials_view(request, pk=None):
         {'message': 'No se encontró la ficha técnica'},
         status=status.HTTP_400_BAD_REQUEST
     )
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def fichas_by_modelo(request, pk=None): 
+    fichas = FichaTecnica.objects.filter(modelo_id=pk)
+    # Retrieve
+    if request.method == 'GET':
+        ficha_serializer = FichaTecnicaSerializerGetPedido(fichas, many=True)
+        return Response(ficha_serializer.data, status=status.HTTP_200_OK)
