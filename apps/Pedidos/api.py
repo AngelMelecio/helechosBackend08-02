@@ -12,7 +12,7 @@ from apps.DetallePedido.serializers import DetallePedidoSerializer, DetallePedid
 from apps.Produccion.serializers import ProduccionSerializer
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Count
 
 
 @transaction.atomic
@@ -161,13 +161,13 @@ def pedido_detail_api_view(request, pk=None):
                 progreso_estacion = Produccion.objects \
                     .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla']) \
                     .values('estacionActual') \
-                    .annotate(cantidad=Sum('cantidad'))
+                    .annotate(cuenta=Count('idProduccion'))
                 
                 # Devolverlo en una matriz
                 cantidad['progreso'] = []
                 for estacion in progreso_estacion:
                     cantidad['progreso'].append(
-                        [estacion['estacionActual'], estacion['cantidad']])
+                        [estacion['estacionActual'], estacion['cuenta']])
 
         """
         # objToResponse = {}
