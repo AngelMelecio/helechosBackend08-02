@@ -17,3 +17,8 @@ class ModeloSerializerGetPedido(serializers.ModelSerializer):
     class Meta:
         model = Modelo
         fields = ('idModelo','cliente')
+
+class ModeloSerializerGetProduccion(serializers.ModelSerializer):
+    class Meta:
+        model = Modelo
+        fields = ('idModelo','nombre')

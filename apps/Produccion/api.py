@@ -65,18 +65,33 @@ def produccion_detail_api_view(request, pk=None):
 
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
-def get_produccion_with_registros_by_detallePedido(request, pk=None):#idDetalleProduccion
+def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProduccion
     # Queryset
-    etiquetas = Produccion.objects.filter( idProduccion = pk ).first()
-    
+    etiquetas = Produccion.objects.filter(detallePedido__pedido__idPedido = pk )
+
     # Validacion
     if etiquetas:
-        # Retrieve
-        if request.method == 'GET':
-            produccion_serializer =  ProduccionSerializerListar(registroProduccion)
-            return Response( produccion_serializer.data, status=status.HTTP_200_OK )
+        etiquetasSerializadas =  ProduccionSerializerListar(etiquetas, many=True)
+        objToResponse = []
+        total=len(etiquetasSerializadas.data)
+        for etiqueta in etiquetasSerializadas.data:
+            colores=""
+            for color in etiqueta['detallePedido']['fichaTecnica']['materiales']:
+                colores+=color['color']+" - "+color['tenida']+" / "
+            colores=colores[:-3]
+            objToResponse.append({
+                'idProduccion':etiqueta['idProduccion'],
+                'idPedido':etiqueta['detallePedido']['pedido'],
+                'modelo':etiqueta['detallePedido']['fichaTecnica']['modelo']['nombre'],
+                'color':colores,
+                'talla':etiqueta['tallaReal'],
+                'cantidad':etiqueta['cantidad'],
+                'numEtiqueta':(etiqueta['numEtiqueta']+"/"+str(total)),
+            })
+
+        return Response( objToResponse, status=status.HTTP_200_OK )
     
     return Response(
-        {'message':'No se encontró el registro de producción'}, 
+        {'message':'No se encontraron etiquetas relacionadas'}, 
         status=status.HTTP_400_BAD_REQUEST
     )

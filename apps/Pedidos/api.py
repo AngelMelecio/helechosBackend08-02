@@ -64,7 +64,7 @@ def pedido_api_view(request):
             # Guardar el pedido y obtener el nuevo id
             pedido_serializer.save()
             newPedidoId = pedido_serializer.data.get('idPedido')
-
+            numEtiqueta = 1
             for detalle in detalles:
                 detalle['pedido'] = newPedidoId
                 detallePedido_serializer = DetallePedidoSerializer(
@@ -80,11 +80,10 @@ def pedido_api_view(request):
                     for cantidad in cantidades:
                         paquetes = cantidad['cantidad'] / cantidad['paquete']
                         ultimoPaquete = cantidad['cantidad'] % cantidad['paquete']
-
                         for i in range(0, int(paquetes)):
                             etiqueta = {
                                 "detallePedido": newDetalleId,
-                                "numEtiqueta": i+1,
+                                "numEtiqueta": str(numEtiqueta),
                                 "cantidad": cantidad['paquete'],
                                 "estacionActual": "creada",
                                 "tallaReal": cantidad['talla']
@@ -95,16 +94,19 @@ def pedido_api_view(request):
                                 data=etiqueta)
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
+                                numEtiqueta += 1
                             else:
                                 errors.append(
                                     'No se pudieron generar las etiquetas, error en la solicitud.')
                                 success = False
 
+                           
+
                         # Guardar la última etiqueta
                         if ultimoPaquete > 0:
                             etiqueta = {
                                 "detallePedido": newDetalleId,
-                                "numEtiqueta": int(paquetes)+1,
+                                "numEtiqueta": str(numEtiqueta),
                                 "cantidad": ultimoPaquete,
                                 "estacionActual": "creada",
                                 "tallaReal": cantidad['talla']
@@ -113,6 +115,7 @@ def pedido_api_view(request):
                                 data=etiqueta)
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
+                                numEtiqueta += 1
                             else:
                                 errors.append(
                                     'No se pudo generar la última etiqueta, error en la solicitud.')

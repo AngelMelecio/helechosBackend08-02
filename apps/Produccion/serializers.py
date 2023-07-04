@@ -2,7 +2,7 @@ from rest_framework import serializers
 from apps.Produccion.models import Produccion
 from apps.Empleados.serializers import EmpleadoSerializer
 from apps.Maquinas.serializers import MaquinaSerializer
-from apps.DetallePedido.serializers import DetallePedidoSerializerListar
+from apps.DetallePedido.serializers import DetallePedidoSerializerGetPedido,DetallePedidoSerializerGetProduccion
 
 class ProduccionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,7 +11,7 @@ class ProduccionSerializer(serializers.ModelSerializer):
 
 class ProduccionSerializerListar(serializers.ModelSerializer):
     #General
-    detallePedido = DetallePedidoSerializerListar()
+    detallePedido = DetallePedidoSerializerGetProduccion()
     class Meta:
         model = Produccion
         fields = '__all__'
