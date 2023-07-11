@@ -77,7 +77,7 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
         for etiqueta in etiquetasSerializadas.data:
             colores=""
             for color in etiqueta['detallePedido']['fichaTecnica']['materiales']:
-                colores+=color['color']+" - "+color['tenida']+" / "
+                colores+=color['color']+"\n"
             colores=colores[:-3]
             objToResponse.append({
                 'idProduccion':etiqueta['idProduccion'],
