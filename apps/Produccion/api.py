@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -25,43 +26,25 @@ def produccion_api_view(request):
             }, status=status.HTTP_201_CREATED )
         return Response( produccion_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
-@api_view(['GET','PUT','DELETE'])
+@api_view(['PUT'])
 @parser_classes([MultiPartParser, JSONParser])
-def produccion_detail_api_view(request, pk=None):
-    # Queryset
-    registroProduccion = Produccion.objects.filter( idProduccion = pk ).first()
-    
-    # Validacion
-    if registroProduccion:
-        # Retrieve
-        if request.method == 'GET':
-            produccion_serializer =  ProduccionSerializerListar(registroProduccion)
-            return Response( produccion_serializer.data, status=status.HTTP_200_OK )
-        
-        # Update
-        elif request.method == 'PUT':
-            produccion_serializer = ProduccionSerializer(registroProduccion, data = request.data)
-            if produccion_serializer.is_valid():
-                produccion_serializer.save()
-               
-                return Response( {
-                    'message':'¡Registro de producción actualizado correctamente!'
-                }, status=status.HTTP_200_OK )
-            print('ERROR', produccion_serializer.errors)
-            return Response(produccion_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
-        
-        # Delete
-        elif request.method == 'DELETE':
-            registroProduccion = Produccion.objects.filter( idProduccion = pk ).first()
-            registroProduccion.delete()
-            return Response(
-                {'message':'¡Registro de producción eliminado correctamente!'}, 
-                status=status.HTTP_200_OK
-            )
-    return Response(
-        {'message':'No se encontró el registro de producción'}, 
-        status=status.HTTP_400_BAD_REQUEST
-    )
+def update_produccion_impresion(request):
+    data = request.data
+    try:
+        for i in data:
+            id = i.get('idProduccion', None)
+            obj = Produccion.objects.get(idProduccion=id)
+            obj.fechaImpresion = timezone.now() 
+            obj.estacionActual = 'Impresa'   
+            obj.save()
+    except Produccion.DoesNotExist:
+        return Response( {
+            'message':'¡Registro de producción no encontrado!',
+        }, status=status.HTTP_400_BAD_REQUEST )
+    return Response( {
+        'message':'¡Registros de producción actualizados correctamente!'
+    }, status=status.HTTP_200_OK )
+
 
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
@@ -79,6 +62,7 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
             for color in etiqueta['detallePedido']['fichaTecnica']['materiales']:
                 colores+=color['color']+"\n"
             colores=colores[:-3]
+
             objToResponse.append({
                 'idProduccion':etiqueta['idProduccion'],
                 'idPedido':etiqueta['detallePedido']['pedido'],
@@ -87,6 +71,8 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
                 'talla':etiqueta['tallaReal'],
                 'cantidad':etiqueta['cantidad'],
                 'numEtiqueta':(etiqueta['numEtiqueta']+"/"+str(total)),
+                'estado' :"No impresa" if etiqueta['fechaImpresion'] is None else "Impresa"
+
             })
 
         return Response( objToResponse, status=status.HTTP_200_OK )
