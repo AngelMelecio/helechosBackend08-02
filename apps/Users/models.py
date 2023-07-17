@@ -33,7 +33,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     rol = models.CharField(max_length=20,
-                            choices=[('Encargado', 'Encargado'),('Desarrollador', 'Desarrollador'),('Administrador', 'Administrador')],
+                            choices=[('Encargado', 'Encargado'),('Desarrollador', 'Desarrollador'),('Administrador', 'Administrador'),('Produccion', 'Produccion')],
                             default='Encargado')
     historical = HistoricalRecords()
     objects = UserManager()

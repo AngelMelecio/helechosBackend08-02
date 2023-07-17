@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.DetallePedido.models import DetallePedido
 from apps.FichasTecnicas.serializers import FichaTecnicaSerializerGetPedido,FichaTecnicaSerializerGetProduccion
+from apps.Pedidos.serializerListar import PedidoSerializerListar
 
 class DetallePedidoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,3 +33,9 @@ class DetallePedidoSerializerGetProduccion(serializers.ModelSerializer):
     class Meta:
         model =DetallePedido
         fields = ('idDetallePedido','fichaTecnica','pedido')
+
+class DetallePedidoSerializerPostRegistro(serializers.ModelSerializer):
+    pedido=PedidoSerializerListar()
+    class Meta:
+        model = DetallePedido
+        fields = ('idDetallePedido', 'rutaProduccion','pedido')
