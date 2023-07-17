@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Registros.models import Registro
 from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar
+from apps.Produccion.models import Produccion
+from apps.Produccion.serializers import ProduccionSerializerPostRegistro
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.parsers import JSONParser
 
@@ -18,11 +20,41 @@ def registro_api_view(request):
 
     # Create
     elif request.method == 'POST':
+        
+        response = []
+        registros = request.data
+
+        for reg in registros:
+            idPrd = reg.get('produccion')
+            prd = Produccion.objects.filter( idProduccion = idPrd ).first()
+            prd_srlzr = ProduccionSerializerPostRegistro(prd)
+
+            estacionAnterior = prd_srlzr.data.get('estacionActual')
+            estacionNueva = prd_srlzr.data['detallePedido']['rutaProduccion'][estacionAnterior]
+
+            response.append( 
+                {
+                'numEtiqueta': prd_srlzr.data.get('numEtiqueta'),
+                'Detalles': estacionAnterior + " --> " + estacionNueva
+                }
+            )#prd_srlzr.data)
+            """
+            """
+
+
+
+        return Response( response, status=status.HTTP_200_OK)
+        """
+            if p_s.is_valid() :
+            else:
+                print( p_s.errors )
+
         registro_serializer = RegistroSerializer(data=request.data)
         if registro_serializer.is_valid():
             registro_serializer.save()
             return Response( {'message':'¡Registro creado correctamente!'}, status=status.HTTP_201_CREATED )
         return Response( registro_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+        """
 
 @api_view(['GET','PUT','DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
