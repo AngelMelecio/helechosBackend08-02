@@ -35,7 +35,7 @@ def update_produccion_impresion(request):
             id = i.get('idProduccion', None)
             obj = Produccion.objects.get(idProduccion=id)
             obj.fechaImpresion = timezone.now() 
-            obj.estacionActual = 'Impresa'   
+            obj.estacionActual = 'tejido'   
             obj.save()
     except Produccion.DoesNotExist:
         return Response( {
@@ -71,7 +71,7 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
                 'talla':etiqueta['tallaReal'],
                 'cantidad':etiqueta['cantidad'],
                 'numEtiqueta':(etiqueta['numEtiqueta']+"/"+str(total)),
-                'estado' :"No impresa" if etiqueta['fechaImpresion'] is None else "Impresa"
+                'estado' :"No impresa" if etiqueta['fechaImpresion'] is None else "creada"
 
             })
 
