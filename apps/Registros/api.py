@@ -6,12 +6,16 @@ from apps.Registros.models import Registro
 from apps.Empleados.models import Empleado
 from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar
 from apps.Produccion.models import Produccion
-from apps.Empleados.serializers import EmpleadoSerializer
 from apps.Produccion.serializers import ProduccionSerializerPostRegistro
+from apps.Pedidos.models import Pedido
+from apps.Pedidos.serializers import PedidoSerializerGetOne
+from apps.Empleados.serializers import EmpleadoSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.parsers import JSONParser
 from django.utils import timezone
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.db.models import Sum, Count
 
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser, JSONParser])
@@ -26,30 +30,39 @@ def registro_api_view(request):
     elif request.method == 'POST':
 
         registros = request.data
-        fcha = timezone.now()
         empleado = Empleado.objects.filter(
             idEmpleado=registros[0].get('empleado')).first()
         empl_srlzr = EmpleadoSerializer(empleado)
         
-
+        fcha = timezone.now()
+        unique_pedidos = set()
         rgtrs = []
+
         for reg in registros:
-            # Obtenemos el estado actual de la etiqueta
-            idPrd = reg.get('produccion')
-            prd = Produccion.objects.filter(idProduccion=idPrd).first()
-            prd_srlzr = ProduccionSerializerPostRegistro(prd)
-            
+            # Datos del request
             empl = reg.get('empleado')
             maq = reg.get('maquina')
             dpto = reg.get('departamento')
             trno = reg.get('turno')
+            idPrd = reg.get('produccion')
+
+            # Obtenemos el estado actual de la etiqueta
+            prd = Produccion.objects.filter(idProduccion=idPrd).first()
+            prd_srlzr = ProduccionSerializerPostRegistro(prd)
 
             estacionAnterior \
                 = prd_srlzr.data.get('estacionActual')
             estacionNueva \
                 = prd_srlzr.data['detallePedido']['rutaProduccion'][estacionAnterior.lower()]
-            modelo \
+            mdlo \
                 = prd_srlzr.data['detallePedido']['pedido']['modelo']['nombre']
+            idPed \
+                = prd_srlzr.data['detallePedido']['pedido']['idPedido']
+            noEtq \
+                = prd_srlzr.data.get('numEtiqueta')
+
+            # Guardamos los pedidos únicos
+            unique_pedidos.add(idPed)
 
             messg = ""
             ok = False
@@ -62,8 +75,8 @@ def registro_api_view(request):
                 messg = "El departamento no coincide con la estacion actual"
 
             rgtrs.append({
-                'modelo': modelo,
-                'numEtiqueta': prd_srlzr.data.get('numEtiqueta'),
+                'modelo': mdlo,
+                'numEtiqueta': noEtq,
                 'ok': ok,
                 'Detalles': messg
             })
@@ -92,18 +105,39 @@ def registro_api_view(request):
             'departamento': registros[0].get('departamento')
         }
 
-        return Response(response, status=status.HTTP_200_OK)
-        """
-            if p_s.is_valid() :
-            else:
-                print( p_s.errors )
+        # Enviar las etiquetas actualizadas a los detalles de los pedidos correspondientes
+        channel_layer = get_channel_layer()
+        for ped in unique_pedidos:
+            
+            pedido = Pedido.objects.filter(idPedido=ped).first()
+            pedido_serializer = PedidoSerializerGetOne(pedido)
+            detalles = pedido_serializer.data.get('detalles')
 
-        registro_serializer = RegistroSerializer(data=request.data)
-        if registro_serializer.is_valid():
-            registro_serializer.save()
-            return Response( {'message':'¡Registro creado correctamente!'}, status=status.HTTP_201_CREATED )
-        return Response( registro_serializer.errors, status=status.HTTP_400_BAD_REQUEST )
-        """
+            for detalle in detalles:
+                idDetalle = detalle.get('idDetallePedido')
+                cantidades = detalle.get('cantidades')
+                for cantidad in cantidades:
+                    
+                    # Obtener el progreso de cada talla
+                    progreso_estacion = Produccion.objects \
+                        .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla']) \
+                        .values('estacionActual') \
+                        .annotate(cuenta=Count('idProduccion'))
+                    
+                    # Devolverlo en una matriz
+                    cantidad['progreso'] = []
+                    for estacion in progreso_estacion:
+                        cantidad['progreso'].append(
+                            [estacion['estacionActual'], estacion['cuenta']])
+                        
+            dtll_pedido = {
+                'type': 'pedido_message',  # This should match the method name in your consumer
+                'text': pedido_serializer.data,
+            }    
+            # Propagacion a través de channels
+            async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
+
+        return Response(response, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
