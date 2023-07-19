@@ -19,6 +19,8 @@ DEBUG = False
 # Application definition
 
 BASE_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,8 +56,6 @@ THIRD_APPS = [
 
 INSTALLED_APPS = BASE_APPS+LOCAL_APPS+THIRD_APPS
 
-
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -64,7 +64,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -97,6 +96,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backendHelechos.wsgi.application'
+ASGI_APPLICATION = 'backendHelechos.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # or use Redis or other backends
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
