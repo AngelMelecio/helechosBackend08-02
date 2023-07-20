@@ -32,7 +32,7 @@ class DetallePedidoSerializerGetProduccion(serializers.ModelSerializer):
     fichaTecnica=FichaTecnicaSerializerGetProduccion()
     class Meta:
         model =DetallePedido
-        fields = ('idDetallePedido','fichaTecnica','pedido')
+        fields = ('idDetallePedido','fichaTecnica','pedido','rutaProduccion')
 
 class DetallePedidoSerializerPostRegistro(serializers.ModelSerializer):
     pedido=PedidoSerializerListar()
