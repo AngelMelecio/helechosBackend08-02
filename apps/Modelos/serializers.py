@@ -14,9 +14,10 @@ class ModeloSerializerListar(serializers.ModelSerializer):
         fields = '__all__'
 
 class ModeloSerializerGetPedido(serializers.ModelSerializer):
+    cliente = ClienteSerializerSimple()
     class Meta:
         model = Modelo
-        fields = ('idModelo','cliente')
+        fields = ('idModelo', 'nombre', 'cliente')
 
 class ModeloSerializerGetProduccion(serializers.ModelSerializer):
     class Meta:
