@@ -95,7 +95,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backendHelechos.wsgi.application'
+#WSGI_APPLICATION = 'backendHelechos.wsgi.application'
 ASGI_APPLICATION = 'backendHelechos.asgi.application'
 
 CHANNEL_LAYERS = {

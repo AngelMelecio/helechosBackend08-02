@@ -26,6 +26,7 @@ application = ProtocolTypeRouter({
         AuthMiddlewareStack(
             URLRouter([
                 re_path(r'ws/pedidos/(?P<pedido_id>\w+)/$', PedidosConsumer.as_asgi()),
+                
             ])
         ) 
     ),
