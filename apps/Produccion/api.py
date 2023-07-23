@@ -73,7 +73,8 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
                 'numEtiqueta':(etiqueta['numEtiqueta']+"/"+str(total)),
                 'estado' :"No impresa" if etiqueta['fechaImpresion'] is None else "Impresa",
                 'rutaProduccion':etiqueta['detallePedido']['rutaProduccion'],
-                'estacionActual':etiqueta['estacionActual']
+                'estacionActual':etiqueta['estacionActual'],
+                'idDetallePedido':etiqueta['detallePedido']['idDetallePedido'],
             })
 
         return Response( objToResponse, status=status.HTTP_200_OK )
