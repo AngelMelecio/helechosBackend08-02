@@ -4,7 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Registros.models import Registro
 from apps.Empleados.models import Empleado
-from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar
+from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar,RegistroSerializerToChart
+from apps.Produccion.serializers import ProduccionSerializer
 from apps.Produccion.models import Produccion
 from apps.Produccion.serializers import ProduccionSerializerPostRegistro
 from apps.Pedidos.models import Pedido
@@ -175,5 +176,42 @@ def registro_detail_api_view(request, pk=None):
 
     return Response(
         {'message': 'No se encontró el registro'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def regitros_by_idProduccion(request, pk=None):
+    # Queryset
+    etiqueta = Produccion.objects.filter(idProduccion=pk).first()
+
+    # Validacion
+    if etiqueta:
+        registros = Registro.objects.filter(produccion=pk).order_by('fechaCaptura')
+        registros_serializer = RegistroSerializerToChart(registros, many=True)  
+        objToResponse = [] 
+        it=1 
+        fechaAnterior = etiqueta.fechaImpresion
+        n = len(registros_serializer.data)
+        for registro in registros_serializer.data:
+            item=[]
+            item.append(registro['departamento'])
+            item.append(registro['empleado']['nombre'] + ' ' + registro['empleado']['apellidos']+\
+                        ' - M' + registro['maquina']['numero'] + '  L' + registro['maquina']['numero'])
+            item.append(fechaAnterior)
+            if it == n:
+                item.append(timezone.now())
+            else:
+                item.append(registro['fechaCaptura'])
+
+            it=it+1
+            fechaAnterior = registro['fechaCaptura']
+            objToResponse.append(item)
+        return Response(objToResponse, status=status.HTTP_200_OK)
+
+      
+
+    return Response(
+        {'message': 'Registro de producción no encontrado'},
         status=status.HTTP_400_BAD_REQUEST
     )

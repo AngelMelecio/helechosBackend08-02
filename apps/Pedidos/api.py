@@ -160,17 +160,13 @@ def pedido_detail_api_view(request, pk=None):
             cantidades = detalle.get('cantidades')
             for cantidad in cantidades:
                 
-                # Obtener el progreso de cada talla
-                progreso_estacion = Produccion.objects \
-                    .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla']) \
-                    .values('estacionActual') \
-                    .annotate(cuenta=Count('idProduccion'))
+                # Obtener las etiquetas de cada talla
+                etiquetas_estacion = Produccion.objects \
+                    .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
                 
-                # Devolverlo en una matriz
-                cantidad['progreso'] = []
-                for estacion in progreso_estacion:
-                    cantidad['progreso'].append(
-                        [estacion['estacionActual'], estacion['cuenta']])
-
+                
+                   
+                etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
+                cantidad['etiquetas'] = etiquetas_estacion_serializer.data
 
     return Response(pedido_serializer.data, status=status.HTTP_200_OK)

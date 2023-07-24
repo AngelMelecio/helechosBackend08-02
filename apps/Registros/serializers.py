@@ -16,3 +16,10 @@ class RegistroSerializerListar(serializers.ModelSerializer):
     class Meta:
         model = Registro
         fields = '__all__'
+
+class RegistroSerializerToChart(serializers.ModelSerializer):
+    empleado = EmpleadoSerializerToRegistros()
+    maquina = MaquinaSerializerToRegistros()
+    class Meta:
+        model = Registro
+        fields = '__all__'
