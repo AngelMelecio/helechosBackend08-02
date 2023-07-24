@@ -36,7 +36,7 @@ def registro_api_view(request):
         empl_srlzr = EmpleadoSerializer(empleado)
         
         fcha = timezone.now()
-        unique_pedidos = set()
+        cambios_pedido = {}
         rgtrs = []
 
         for reg in registros:
@@ -61,12 +61,13 @@ def registro_api_view(request):
                 = prd_srlzr.data['detallePedido']['pedido']['idPedido']
             noEtq \
                 = prd_srlzr.data.get('numEtiqueta')
+            tll \
+                = prd_srlzr.data.get('tallaReal')
+            idDtllPed \
+                = prd_srlzr.data['detallePedido']['idDetallePedido']
 
-            # Guardamos los pedidos únicos
-            unique_pedidos.add(idPed)
-
-            messg = ""
             ok = False
+            messg = ""
 
             # validar departamento:
             if (dpto.lower() == estacionAnterior.lower()):
@@ -99,6 +100,17 @@ def registro_api_view(request):
                 prd.estacionActual = estacionNueva
                 prd.save()
 
+                # Cambios para sockets
+                if not idPed in cambios_pedido:
+                    cambios_pedido[idPed] = []
+
+                cambios_pedido[idPed].append({
+                    'produccion': idPrd,
+                    'detallePedido': idDtllPed,
+                    'talla' : tll,
+                    'estacionNueva': estacionNueva,
+                })
+
         response = {
             'empleado': empl_srlzr.data.get('nombre') + " " + empl_srlzr.data.get('apellidos'),
             'fecha': fcha,
@@ -108,7 +120,17 @@ def registro_api_view(request):
 
         # Enviar las etiquetas actualizadas a los detalles de los pedidos correspondientes
         channel_layer = get_channel_layer()
-        for ped in unique_pedidos:
+        
+        for ped, details in cambios_pedido.items():
+            
+            dtll_pedido = {
+                'type': 'pedido_message',  # This should match the method name in your consumer
+                'text': details,
+            }   
+            # Propagacion a través de channels
+            async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
+
+        """
             
             pedido = Pedido.objects.filter(idPedido=ped).first()
             pedido_serializer = PedidoSerializerGetOne(pedido)
@@ -119,17 +141,12 @@ def registro_api_view(request):
                 cantidades = detalle.get('cantidades')
                 for cantidad in cantidades:
                     
-                    # Obtener el progreso de cada talla
-                    progreso_estacion = Produccion.objects \
-                        .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla']) \
-                        .values('estacionActual') \
-                        .annotate(cuenta=Count('idProduccion'))
+                    # Obtener las etiquetas de cada talla
+                    etiquetas_estacion = Produccion.objects \
+                        .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
                     
-                    # Devolverlo en una matriz
-                    cantidad['progreso'] = []
-                    for estacion in progreso_estacion:
-                        cantidad['progreso'].append(
-                            [estacion['estacionActual'], estacion['cuenta']])
+                    etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
+                    cantidad['etiquetas'] = etiquetas_estacion_serializer.data
                         
             dtll_pedido = {
                 'type': 'pedido_message',  # This should match the method name in your consumer
@@ -137,6 +154,7 @@ def registro_api_view(request):
             }    
             # Propagacion a través de channels
             async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
+        """
 
         return Response(response, status=status.HTTP_200_OK)
 

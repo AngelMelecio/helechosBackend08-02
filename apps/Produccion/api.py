@@ -57,6 +57,9 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
         etiquetasSerializadas =  ProduccionSerializerListar(etiquetas, many=True)
         objToResponse = []
         total=len(etiquetasSerializadas.data)
+
+        
+
         for etiqueta in etiquetasSerializadas.data:
             colores=""
             for color in etiqueta['detallePedido']['fichaTecnica']['materiales']:
