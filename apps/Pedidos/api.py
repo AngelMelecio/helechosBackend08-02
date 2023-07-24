@@ -163,8 +163,6 @@ def pedido_detail_api_view(request, pk=None):
                 # Obtener las etiquetas de cada talla
                 etiquetas_estacion = Produccion.objects \
                     .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
-                
-                
                    
                 etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
                 cantidad['etiquetas'] = etiquetas_estacion_serializer.data
