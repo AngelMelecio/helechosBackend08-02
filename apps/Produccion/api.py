@@ -35,7 +35,8 @@ def update_produccion_impresion(request):
             id = i.get('idProduccion', None)
             obj = Produccion.objects.get(idProduccion=id)
             obj.fechaImpresion = timezone.now() 
-            obj.estacionActual = 'tejido'   
+            if obj.estacionActual == 'creada' :  
+                obj.estacionActual = 'tejido'
             obj.save()
     except Produccion.DoesNotExist:
         return Response( {
