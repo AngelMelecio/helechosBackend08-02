@@ -15,7 +15,7 @@ class Empleado(models.Model):
     fechaAltaSeguro = models.DateField(null=True, blank=True)
     departamento = models.CharField(max_length=20,
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
-                                    ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
+                                    ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia'),('Calidad', 'Calidad')],
                             default='Tejido')
     gafete = models.CharField(max_length=200,null=True, blank=True)
     is_active = models.BooleanField(default = True)
