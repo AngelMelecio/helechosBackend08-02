@@ -51,10 +51,6 @@ def registro_api_view(request):
             prd = Produccion.objects.filter(idProduccion=idPrd).first()
             prd_srlzr = ProduccionSerializerPostRegistro(prd)
 
-            estacionAnterior \
-                = prd_srlzr.data.get('estacionActual')
-            estacionNueva \
-                = prd_srlzr.data['detallePedido']['rutaProduccion'][estacionAnterior.lower()]
             mdlo \
                 = prd_srlzr.data['detallePedido']['pedido']['modelo']['nombre']
             idPed \
@@ -65,16 +61,27 @@ def registro_api_view(request):
                 = prd_srlzr.data.get('tallaReal')
             idDtllPed \
                 = prd_srlzr.data['detallePedido']['idDetallePedido']
+            rta \
+                = prd_srlzr.data['detallePedido']['rutaProduccion']
+            estacionAnterior \
+                = prd_srlzr.data.get('estacionActual')
+            estacionNueva \
+                = rta[estacionAnterior.lower()]
 
             ok = False
-            messg = ""
+            messg = "La etiqueta aún no ha sido escaneada en " + estacionAnterior + '.'
+            pos = "creada"
 
             # validar departamento:
-            if (dpto.lower() == estacionAnterior.lower()):
-                messg = estacionAnterior + " --> " + estacionNueva
-                ok = True
-            else:
-                messg = "El departamento no coincide con la estacion actual"
+            while pos != estacionAnterior.lower() : 
+                pos = rta[pos]
+                if( pos == dpto.lower() ):
+                    if (dpto.lower() == estacionAnterior.lower()):
+                        messg = estacionAnterior + " --> " + estacionNueva
+                        ok = True
+                    else :
+                        messg = 'La etiqueta ya ha sido escaneada en ' + dpto + '.'
+                    break
 
             rgtrs.append({
                 'modelo': mdlo,
@@ -118,44 +125,16 @@ def registro_api_view(request):
             'departamento': registros[0].get('departamento')
         }
 
-        # Enviar las etiquetas actualizadas a los detalles de los pedidos correspondientes
+        # Enviar los cambios en la producciónn a los pedidos correspondientes
         channel_layer = get_channel_layer()
-        
         for ped, details in cambios_pedido.items():
-            
             dtll_pedido = {
                 'type': 'pedido_message',  # This should match the method name in your consumer
                 'text': details,
             }   
             # Propagacion a través de channels
             async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
-
-        """
-            
-            pedido = Pedido.objects.filter(idPedido=ped).first()
-            pedido_serializer = PedidoSerializerGetOne(pedido)
-            detalles = pedido_serializer.data.get('detalles')
-
-            for detalle in detalles:
-                idDetalle = detalle.get('idDetallePedido')
-                cantidades = detalle.get('cantidades')
-                for cantidad in cantidades:
-                    
-                    # Obtener las etiquetas de cada talla
-                    etiquetas_estacion = Produccion.objects \
-                        .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
-                    
-                    etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
-                    cantidad['etiquetas'] = etiquetas_estacion_serializer.data
-                        
-            dtll_pedido = {
-                'type': 'pedido_message',  # This should match the method name in your consumer
-                'text': pedido_serializer.data,
-            }    
-            # Propagacion a través de channels
-            async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
-        """
-
+        
         return Response(response, status=status.HTTP_200_OK)
 
 

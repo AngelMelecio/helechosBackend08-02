@@ -77,6 +77,8 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 ROOT_URLCONF = 'backendHelechos.urls'
 
 TEMPLATES = [
@@ -127,7 +129,7 @@ AUTH_USER_MODEL = 'Users.User'
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://192.168.1.239:3000',
-    'http://192.168.111.94:3000',
+    'http://192.168.1.11:3000',
     'http://127.0.0.1:8080'
 ]
 
