@@ -95,6 +95,8 @@ def registro_api_view(request):
                 })
                 if reg_serializer.is_valid():
                     reg_serializer.save()
+                else:
+                    print(reg_serializer.errors)
 
                 # PUT de produccion
                 prd.estacionActual = estacionNueva
@@ -213,9 +215,11 @@ def regitros_by_idProduccion(request, pk=None):
         n = len(registros_serializer.data)
         for registro in registros_serializer.data:
             item=[]
+            maquina = ' N/A'
+            if not registro['maquina'] == None:
+                maquina = ' - M' + registro['maquina']['numero'] + '  L' + registro['maquina']['numero']
             item.append(registro['departamento'])
-            item.append(registro['empleado']['nombre'] + ' ' + registro['empleado']['apellidos']+\
-                        ' - M' + registro['maquina']['numero'] + '  L' + registro['maquina']['numero'])
+            item.append(registro['empleado']['nombre'] + ' ' + registro['empleado']['apellidos']+maquina)
             item.append(fechaAnterior)
             if it == n:
                 item.append(timezone.now())
