@@ -13,7 +13,7 @@ class Registro(models.Model):
     fechaCaptura=models.DateTimeField(auto_now_add=True, null=True, blank=True)
     departamento = models.CharField(max_length=20,
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
-                                    ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
+                                    ('Empaque', 'Empaque'),('Calidad', 'Calidad'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
                             default='Tejido')
     def __str__(self):
         return "{} {}".format(self.departamento, self.fechaCaptura)
