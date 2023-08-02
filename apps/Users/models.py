@@ -22,8 +22,8 @@ class UserManager(BaseUserManager):
     def create_user(self,nombre,apellidos, correo, usuario ,rol, password=None, **extra_fields):
         return self._create_user(nombre,apellidos, correo, usuario, rol, password, False, False, **extra_fields)
 
-    def create_superuser(self,nombre,apellidos, correo, usuario, rol, password=None, **extra_fields):
-        return self._create_user(nombre, apellidos, correo, usuario, rol, password, True, True, **extra_fields)
+    def create_superuser(self,nombre,apellidos, correo, usuario, password=None, **extra_fields):
+        return self._create_user(nombre, apellidos, correo, usuario, password, True, True,'Administrador', **extra_fields)
 
 class User(AbstractBaseUser,PermissionsMixin):
     nombre = models.CharField('Nombres', max_length=100, blank=True, null=True)
@@ -33,7 +33,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     rol = models.CharField(max_length=20,
-                            choices=[('Encargado', 'Encargado'),('Desarrollador', 'Desarrollador'),('Administrador', 'Administrador')],
+                            choices=[('Encargado', 'Encargado'),('Desarrollador', 'Desarrollador'),('Administrador', 'Administrador'),('Produccion', 'Produccion')],
                             default='Encargado')
     historical = HistoricalRecords()
     objects = UserManager()

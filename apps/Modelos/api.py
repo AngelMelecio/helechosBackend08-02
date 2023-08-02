@@ -68,3 +68,13 @@ def modelo_detail_api_view(request, pk=None):
         status=status.HTTP_400_BAD_REQUEST
     )
  
+@api_view(['GET'])
+@parser_classes([MultiPartParser , JSONParser])
+def modelos_cliente_api_view(request, pk=None):
+    modelos = Modelo.objects.filter( cliente__idCliente = pk )
+    if modelos:
+        if request.method == 'GET':
+            modelo_serializer = ModeloSerializerListar(modelos,many=True)
+            return Response( modelo_serializer.data, status=status.HTTP_200_OK )
+    
+    return Response( [] , status=status.HTTP_200_OK )

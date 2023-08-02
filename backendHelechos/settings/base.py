@@ -19,6 +19,8 @@ DEBUG = False
 # Application definition
 
 BASE_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +39,11 @@ LOCAL_APPS = [
     'apps.EmpleadoMaquina',
     'apps.Proveedores',
     'apps.FichaTecnicaMaterial',
-    'apps.FichasTecnicas'
+    'apps.FichasTecnicas',
+    'apps.Pedidos',
+    'apps.DetallePedido',
+    'apps.Produccion',
+    'apps.Registros',
 ]
 
 THIRD_APPS = [
@@ -50,8 +56,6 @@ THIRD_APPS = [
 
 INSTALLED_APPS = BASE_APPS+LOCAL_APPS+THIRD_APPS
 
-
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -60,7 +64,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -73,6 +76,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'backendHelechos.urls'
 
@@ -92,7 +97,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backendHelechos.wsgi.application'
+#WSGI_APPLICATION = 'backendHelechos.wsgi.application'
+ASGI_APPLICATION = 'backendHelechos.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # or use Redis or other backends
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -118,6 +130,8 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'http://192.168.1.239:3000',
     'http://192.168.111.94:3000',
+    'http://192.168.1.11:3000',
+    'http://127.0.0.1:8080'
 ]
 
 

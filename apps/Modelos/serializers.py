@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.Modelos.models import Modelo
-from apps.Clientes.serializers import ClienteSerializer
+from apps.Clientes.serializers import ClienteSerializerSimple
 
 class ModeloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,18 @@ class ModeloSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ModeloSerializerListar(serializers.ModelSerializer):
-    cliente = ClienteSerializer()
+    cliente = ClienteSerializerSimple()
     class Meta:
         model = Modelo
         fields = '__all__'
+
+class ModeloSerializerGetPedido(serializers.ModelSerializer):
+    cliente = ClienteSerializerSimple()
+    class Meta:
+        model = Modelo
+        fields = ('idModelo', 'nombre', 'cliente')
+
+class ModeloSerializerGetProduccion(serializers.ModelSerializer):
+    class Meta:
+        model = Modelo
+        fields = ('idModelo','nombre')
