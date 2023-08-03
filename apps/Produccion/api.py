@@ -6,6 +6,8 @@ from rest_framework.decorators import parser_classes
 from apps.Produccion.models import Produccion
 from apps.Produccion.serializers import ProduccionSerializer, ProduccionSerializerListar
 from rest_framework.parsers import MultiPartParser, JSONParser
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 @api_view(['GET','POST'])
 @parser_classes([MultiPartParser , JSONParser])
@@ -31,18 +33,44 @@ def produccion_api_view(request):
 def update_produccion_impresion(request):
     data = request.data
     try:
+        cambios = []
+        idPed = None
         for i in data:
             id = i.get('idProduccion', None)
             obj = Produccion.objects.get(idProduccion=id)
-            if obj.estacionActual == 'creada' :
-               obj.fechaImpresion = timezone.now() 
-               obj.estacionActual = 'tejido'
-                
-            obj.save()
+            
+            if obj.estacionActual == 'creada':
+                # PUT Produccion
+                obj.fechaImpresion = timezone.now() 
+                obj.estacionActual = 'tejido'
+                obj.save()
+
+                # Cambios para websockets
+                prd_srlzr = ProduccionSerializerListar(obj)
+                idDtllPed = prd_srlzr.data['detallePedido']['idDetallePedido']
+                idPed = prd_srlzr.data['detallePedido']['pedido']
+                tll = prd_srlzr.data['tallaReal']
+    
+                cambios.append({
+                'produccion': id,
+                'detallePedido': idDtllPed,
+                'talla' : tll,
+                'estacionNueva': 'tejido',
+                })
+            
+        channel_layer = get_channel_layer()
+        dtll_pedido = {
+            'type': 'pedido_message',
+            'text': cambios,
+        }   
+        # Propagacion a través de channels
+        async_to_sync(channel_layer.group_send)(f'pedido_{idPed}', dtll_pedido)
+
     except Produccion.DoesNotExist:
         return Response( {
             'message':'¡Registro de producción no encontrado!',
         }, status=status.HTTP_400_BAD_REQUEST )
+    
     return Response( {
         'message':'¡Registros de producción actualizados correctamente!'
     }, status=status.HTTP_200_OK )
