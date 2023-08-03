@@ -5,7 +5,7 @@ class Produccion(models.Model):
     #General
     idProduccion = models.AutoField(auto_created=True, primary_key=True)
     detallePedido = models.ForeignKey(
-        DetallePedido, on_delete=models.DO_NOTHING)
+        DetallePedido, on_delete=models.CASCADE)
     numEtiqueta=models.CharField(max_length=50, null=True, blank=True)
     cantidad=models.IntegerField(null=False, blank=False)
     estacionActual= models.CharField(max_length=50, null=True, blank=True)
