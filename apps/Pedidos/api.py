@@ -143,28 +143,36 @@ def pedido_api_view(request):
                 "errors": errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
+@transaction.atomic
 @api_view(['GET', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
 def pedido_detail_api_view(request, pk=None):
-    # queryset
-    if request.method == 'GET':
-        
-        # Obtener el pedido con detalles serializados
-        pedido = Pedido.objects.filter(idPedido=pk).first()
-        pedido_serializer = PedidoSerializerGetOne(pedido)
-        detalles = pedido_serializer.data.get('detalles')
+    pedido = Pedido.objects.filter(idPedido=pk).first()
+    if pedido:
+        # queryset
+        if request.method == 'GET':
+            # Obtener el pedido con detalles serializados
+            pedido_serializer = PedidoSerializerGetOne(pedido)
+            detalles = pedido_serializer.data.get('detalles')
 
-        for detalle in detalles:
-            idDetalle = detalle.get('idDetallePedido')
-            cantidades = detalle.get('cantidades')
-            for cantidad in cantidades:
-                
-                # Obtener las etiquetas de cada talla
-                etiquetas_estacion = Produccion.objects \
-                    .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
-                   
-                etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
-                cantidad['etiquetas'] = etiquetas_estacion_serializer.data
+            for detalle in detalles:
+                idDetalle = detalle.get('idDetallePedido')
+                cantidades = detalle.get('cantidades')
+                for cantidad in cantidades:
+                    
+                    # Obtener las etiquetas de cada talla
+                    etiquetas_estacion = Produccion.objects \
+                        .filter(detallePedido__idDetallePedido=idDetalle, tallaReal=cantidad['talla'])
+                    
+                    etiquetas_estacion_serializer = ProduccionSerializer(etiquetas_estacion, many=True)
+                    cantidad['etiquetas'] = etiquetas_estacion_serializer.data
 
-    return Response(pedido_serializer.data, status=status.HTTP_200_OK)
+            return Response(pedido_serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'DELETE':
+            pedido.delete()
+            return Response({'message': 'Pedido eliminado correctamente'}, status=status.HTTP_200_OK)
+    return Response(
+        {'message':'No se encontró el pedido'}, 
+        status=status.HTTP_400_BAD_REQUEST
+    )
