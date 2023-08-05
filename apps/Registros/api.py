@@ -196,7 +196,7 @@ def regitros_by_idProduccion(request, pk=None):
             item=[]
             maquina = ' N/A'
             if not registro['maquina'] == None:
-                maquina = ' - M' + registro['maquina']['numero'] + '  L' + registro['maquina']['numero']
+                maquina = ' L' + registro['maquina']['linea'] + ' - M' + registro['maquina']['numero']
             item.append(registro['departamento'])
             item.append(registro['empleado']['nombre'] + ' ' + registro['empleado']['apellidos']+maquina)
             item.append(fechaAnterior)
