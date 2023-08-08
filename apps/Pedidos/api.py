@@ -29,7 +29,9 @@ def pedido_api_view(request):
                 detallePedido__pedido__idPedido=id, estacionActual='empacado' or 'entregado').count()
             goal = Produccion.objects.filter(
                 detallePedido__pedido__idPedido=id).count()
-            progress = int((ready*100)/goal)
+            progress = 0
+            if goal > 0 :
+              progress = int((ready*100)/goal)
             color_ranges = [
                 (0, 25, '#9b1b1b'),
                 (26, 50, '#ea580c'),
@@ -78,8 +80,11 @@ def pedido_api_view(request):
                     # Iterar sobre las cantidades de cada detalle
                     cantidades = detalle.get('cantidades')
                     for cantidad in cantidades:
-                        paquetes = cantidad['cantidad'] / cantidad['paquete']
-                        ultimoPaquete = cantidad['cantidad'] % cantidad['paquete']
+                        paquetes = 0
+                        ultimoPaquete = 0
+                        if cantidad['paquete'] != 0 :
+                            paquetes = cantidad['cantidad'] / cantidad['paquete']
+                            ultimoPaquete = cantidad['cantidad'] % cantidad['paquete']
                         for i in range(0, int(paquetes)):
                             etiqueta = {
                                 "detallePedido": newDetalleId,
