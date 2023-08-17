@@ -17,6 +17,8 @@ from django.utils import timezone
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db.models import Sum, Count
+from datetime import datetime
+
 
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser, JSONParser])
@@ -209,10 +211,42 @@ def regitros_by_idProduccion(request, pk=None):
             fechaAnterior = registro['fechaCaptura']
             objToResponse.append(item)
         return Response(objToResponse, status=status.HTTP_200_OK)
-
-      
-
     return Response(
         {'message': 'Registro de producción no encontrado'},
         status=status.HTTP_400_BAD_REQUEST
     )
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departamento):
+    #fechaInicio = datetime.strptime(fechaInicio, '%Y-%m-%d')
+    #fechaFin = datetime.strptime(fechaFin, '%Y-%m-%d')
+    # 1. Filtrar los registros
+    registros = Registro.objects.filter(fechaCaptura__range=[fechaInicio, fechaFin],departamento=departamento)
+    # 2. Agrupar y 3. Sumar
+    datos = registros.values('empleado__nombre', 'produccion__detallePedido__fichaTecnica__modelo__nombre').annotate(cantidad=Sum('produccion__cantidad'))
+
+    # Transformar esos datos para que estén en el formato correcto para tu gráfico
+    data = [["Empledo"]]
+    modelos_set = set()
+    
+    for d in datos:
+        modelos_set.add(d['produccion__detallePedido__fichaTecnica__modelo__nombre'])
+
+    modelos_list = list(modelos_set)
+    data[0].extend(modelos_list)
+    
+    empleados_set = set()
+    
+    for d in datos:
+        empleados_set.add(d['empleado__nombre'])
+
+    for empleado in empleados_set:
+        fila = [empleado]
+        for modelo in modelos_list:
+            # Si el empleado trabajó en ese modelo, agregar la cantidad. De lo contrario, agregar 0
+            cantidad = next((d['cantidad'] for d in datos if d['empleado__nombre'] == empleado and d['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo), 0)
+            fila.append(cantidad)
+        data.append(fila)
+
+    return Response(data, status=status.HTTP_200_OK)
