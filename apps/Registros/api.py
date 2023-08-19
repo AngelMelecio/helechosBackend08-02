@@ -52,76 +52,77 @@ def registro_api_view(request):
             # Obtenemos el estado actual de la etiqueta
             prd = Produccion.objects.filter(idProduccion=idPrd).first()
             prd_srlzr = ProduccionSerializerPostRegistro(prd)
+            
+        
+            mdlo = prd_srlzr.data['detallePedido']['pedido']['modelo']['nombre']
+            idPed = prd_srlzr.data['detallePedido']['pedido']['idPedido']
+            noEtq = prd_srlzr.data.get('numEtiqueta')
+            tll = prd_srlzr.data.get('tallaReal')
+            idDtllPed = prd_srlzr.data['detallePedido']['idDetallePedido']
+            rta = prd_srlzr.data['detallePedido']['rutaProduccion']
+            estacionAnterior = prd_srlzr.data.get('estacionActual')
 
-            mdlo \
-                = prd_srlzr.data['detallePedido']['pedido']['modelo']['nombre']
-            idPed \
-                = prd_srlzr.data['detallePedido']['pedido']['idPedido']
-            noEtq \
-                = prd_srlzr.data.get('numEtiqueta')
-            tll \
-                = prd_srlzr.data.get('tallaReal')
-            idDtllPed \
-                = prd_srlzr.data['detallePedido']['idDetallePedido']
-            rta \
-                = prd_srlzr.data['detallePedido']['rutaProduccion']
-            estacionAnterior \
-                = prd_srlzr.data.get('estacionActual')
-            estacionNueva \
-                = rta[estacionAnterior.lower()]
+            if not estacionAnterior == "empacado":
+                estacionNueva = rta[estacionAnterior.lower()]
 
-            ok = False
-            messg = "La etiqueta aún no ha sido escaneada en " + estacionAnterior + '.'
-            pos = "creada"
+                ok = False
+                messg = "La etiqueta aún no ha sido escaneada en " + estacionAnterior + '.'
+                pos = "creada"
 
-            # validar departamento:
-            while pos != estacionAnterior.lower() : 
-                pos = rta[pos]
-                if( pos == dpto.lower() ):
-                    if (dpto.lower() == estacionAnterior.lower()):
-                        messg = estacionAnterior + " --> " + estacionNueva
-                        ok = True
-                    else :
-                        messg = 'La etiqueta ya ha sido escaneada en ' + dpto + '.'
-                    break
+                # validar departamento:
+                while pos != estacionAnterior.lower() : 
+                    pos = rta[pos]
+                    if( pos == dpto.lower() ):
+                        if (dpto.lower() == estacionAnterior.lower()):
+                            messg = estacionAnterior + " --> " + estacionNueva
+                            ok = True
+                        else :
+                            messg = 'La etiqueta ya ha sido escaneada en ' + dpto + '.'
+                        break
 
-            rgtrs.append({
-                'modelo': mdlo,
-                'numEtiqueta': noEtq,
-                'ok': ok,
-                'Detalles': messg
-            })
-
-            if ok:
-                #POST de registro
-                reg_serializer = RegistroSerializer(data={
-                    'empleado': empl,
-                    'maquina': maq,
-                    'produccion': idPrd,
-                    'turno': trno,
-                    'fechaCaptura': fcha,
-                    'departamento': dpto
-                })
-                if reg_serializer.is_valid():
-                    reg_serializer.save()
-                else:
-                    print(reg_serializer.errors)
-
-                # PUT de produccion
-                prd.estacionActual = estacionNueva
-                prd.save()
-
-                # Cambios para sockets
-                if not idPed in cambios_pedido:
-                    cambios_pedido[idPed] = []
-
-                cambios_pedido[idPed].append({
-                    'produccion': idPrd,
-                    'detallePedido': idDtllPed,
-                    'talla' : tll,
-                    'estacionNueva': estacionNueva,
+                rgtrs.append({
+                    'modelo': mdlo,
+                    'numEtiqueta': noEtq,
+                    'ok': ok,
+                    'Detalles': messg
                 })
 
+                if ok:
+                    #POST de registro
+                    reg_serializer = RegistroSerializer(data={
+                        'empleado': empl,
+                        'maquina': maq,
+                        'produccion': idPrd,
+                        'turno': trno,
+                        'fechaCaptura': fcha,
+                        'departamento': dpto
+                    })
+                    if reg_serializer.is_valid():
+                        reg_serializer.save()
+                    else:
+                        print(reg_serializer.errors)
+
+                    # PUT de produccion
+                    prd.estacionActual = estacionNueva
+                    prd.save()
+
+                    # Cambios para sockets
+                    if not idPed in cambios_pedido:
+                        cambios_pedido[idPed] = []
+
+                    cambios_pedido[idPed].append({
+                        'produccion': idPrd,
+                        'detallePedido': idDtllPed,
+                        'talla' : tll,
+                        'estacionNueva': estacionNueva,
+                    })
+            else:
+                rgtrs.append({
+                    'modelo': mdlo,
+                    'numEtiqueta': noEtq,
+                    'ok': False,
+                    'Detalles': 'La etiqueta ya ha sido escaneada en Empaque.'
+                })    
         response = {
             'empleado': empl_srlzr.data.get('nombre') + " " + empl_srlzr.data.get('apellidos'),
             'fecha': fcha,
