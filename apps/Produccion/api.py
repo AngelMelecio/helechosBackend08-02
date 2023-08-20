@@ -116,3 +116,4 @@ def get_produccion_with_registros_by_pedido(request, pk=None):#idDetalleProducci
         {'message':'No se encontraron etiquetas relacionadas'}, 
         status=status.HTTP_400_BAD_REQUEST
     )
+
