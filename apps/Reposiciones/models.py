@@ -8,9 +8,9 @@ class Reposicion(models.Model):
     idReposicion = models.AutoField(auto_created=True, primary_key=True)
     cantidad = models.IntegerField(null=False, blank=False)
     motivos = models.CharField(max_length=500, null=False, blank=True)
-    empleadoFalla = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name='empleadoFalla')
+    empleadoFalla = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name='empleadoFalla', null=True, blank=True)
     empleadoReponedor = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name='empleadoReponedor')
-    maquina = models.ForeignKey(Maquina, on_delete=models.CASCADE)
+    maquina = models.ForeignKey(Maquina, on_delete=models.CASCADE, null=True, blank=True)
     produccion = models.ForeignKey(Produccion, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     

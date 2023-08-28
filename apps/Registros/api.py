@@ -4,9 +4,10 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Registros.models import Registro
 from apps.Empleados.models import Empleado
-from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar,RegistroSerializerToChart
+from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar, RegistroSerializerToChart
 from apps.Produccion.serializers import ProduccionSerializer
 from apps.Produccion.models import Produccion
+from apps.Reposiciones.models import Reposicion
 from apps.Produccion.serializers import ProduccionSerializerPostRegistro
 from apps.Pedidos.models import Pedido
 from apps.Pedidos.serializers import PedidoSerializerGetOne
@@ -18,6 +19,9 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db.models import Sum, Count
 from datetime import datetime
+from django.db.models import Sum, Case, When, Value, IntegerField, F
+from django.db.models.functions import Coalesce
+from django.db.models import CharField
 
 
 @api_view(['GET', 'POST'])
@@ -36,7 +40,7 @@ def registro_api_view(request):
         empleado = Empleado.objects.filter(
             idEmpleado=registros[0].get('empleado')).first()
         empl_srlzr = EmpleadoSerializer(empleado)
-        
+
         fcha = timezone.now()
         cambios_pedido = {}
         rgtrs = []
@@ -52,8 +56,7 @@ def registro_api_view(request):
             # Obtenemos el estado actual de la etiqueta
             prd = Produccion.objects.filter(idProduccion=idPrd).first()
             prd_srlzr = ProduccionSerializerPostRegistro(prd)
-            
-        
+
             mdlo = prd_srlzr.data['detallePedido']['pedido']['modelo']['nombre']
             idPed = prd_srlzr.data['detallePedido']['pedido']['idPedido']
             noEtq = prd_srlzr.data.get('numEtiqueta')
@@ -70,13 +73,13 @@ def registro_api_view(request):
                 pos = "creada"
 
                 # validar departamento:
-                while pos != estacionAnterior.lower() : 
+                while pos != estacionAnterior.lower():
                     pos = rta[pos]
-                    if( pos == dpto.lower() ):
+                    if (pos == dpto.lower()):
                         if (dpto.lower() == estacionAnterior.lower()):
                             messg = estacionAnterior + " --> " + estacionNueva
                             ok = True
-                        else :
+                        else:
                             messg = 'La etiqueta ya ha sido escaneada en ' + dpto + '.'
                         break
 
@@ -88,7 +91,7 @@ def registro_api_view(request):
                 })
 
                 if ok:
-                    #POST de registro
+                    # POST de registro
                     reg_serializer = RegistroSerializer(data={
                         'empleado': empl,
                         'maquina': maq,
@@ -113,7 +116,7 @@ def registro_api_view(request):
                     cambios_pedido[idPed].append({
                         'produccion': idPrd,
                         'detallePedido': idDtllPed,
-                        'talla' : tll,
+                        'talla': tll,
                         'estacionNueva': estacionNueva,
                     })
             else:
@@ -122,7 +125,7 @@ def registro_api_view(request):
                     'numEtiqueta': noEtq,
                     'ok': False,
                     'Detalles': 'La etiqueta ya ha sido escaneada en Empaque.'
-                })    
+                })
         response = {
             'empleado': empl_srlzr.data.get('nombre') + " " + empl_srlzr.data.get('apellidos'),
             'fecha': fcha,
@@ -136,10 +139,11 @@ def registro_api_view(request):
             dtll_pedido = {
                 'type': 'pedido_message',  # This should match the method name in your consumer
                 'text': details,
-            }   
+            }
             # Propagacion a través de channels
-            async_to_sync(channel_layer.group_send)(f'pedido_{ped}', dtll_pedido)
-        
+            async_to_sync(channel_layer.group_send)(
+                f'pedido_{ped}', dtll_pedido)
+
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -181,6 +185,7 @@ def registro_detail_api_view(request, pk=None):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
 def regitros_by_idProduccion(request, pk=None):
@@ -189,26 +194,30 @@ def regitros_by_idProduccion(request, pk=None):
 
     # Validacion
     if etiqueta:
-        registros = Registro.objects.filter(produccion=pk).order_by('fechaCaptura')
-        registros_serializer = RegistroSerializerToChart(registros, many=True)  
-        objToResponse = [] 
-        it=1 
+        registros = Registro.objects.filter(
+            produccion=pk).order_by('fechaCaptura')
+        registros_serializer = RegistroSerializerToChart(registros, many=True)
+        objToResponse = []
+        it = 1
         fechaAnterior = etiqueta.fechaImpresion
         n = len(registros_serializer.data)
         for registro in registros_serializer.data:
-            item=[]
+            item = []
             maquina = ' N/A'
             if not registro['maquina'] == None:
-                maquina = ' L' + registro['maquina']['linea'] + ' - M' + registro['maquina']['numero']
+                maquina = ' L' + \
+                    registro['maquina']['linea'] + ' - M' + \
+                    registro['maquina']['numero']
             item.append(registro['departamento'])
-            item.append(registro['empleado']['nombre'] + ' ' + registro['empleado']['apellidos']+maquina)
+            item.append(registro['empleado']['nombre'] +
+                        ' ' + registro['empleado']['apellidos']+maquina)
             item.append(fechaAnterior)
             if it == n:
                 item.append(timezone.now())
             else:
                 item.append(registro['fechaCaptura'])
 
-            it=it+1
+            it = it+1
             fechaAnterior = registro['fechaCaptura']
             objToResponse.append(item)
         return Response(objToResponse, status=status.HTTP_200_OK)
@@ -217,37 +226,62 @@ def regitros_by_idProduccion(request, pk=None):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
 def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departamento):
-    #fechaInicio = datetime.strptime(fechaInicio, '%Y-%m-%d')
-    #fechaFin = datetime.strptime(fechaFin, '%Y-%m-%d')
-    # 1. Filtrar los registros
-    registros = Registro.objects.filter(fechaCaptura__range=[fechaInicio, fechaFin],departamento=departamento)
-    # 2. Agrupar y 3. Sumar
-    datos = registros.values('empleado__nombre', 'produccion__detallePedido__fichaTecnica__modelo__nombre').annotate(cantidad=Sum('produccion__cantidad'))
+    # Consulta para la producción
+    producciones = (Registro.objects
+                    .filter(departamento=departamento, fechaCaptura__range=(fechaInicio, fechaFin))
+                    .values('empleado__nombre', 'empleado__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre')
+                    .annotate(produccion=Sum('produccion__cantidad'))
+                    .order_by('empleado__nombre', 'empleado__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
 
-    # Transformar esos datos para que estén en el formato correcto para tu gráfico
-    data = [["Empledo"]]
-    modelos_set = set()
-    
-    for d in datos:
-        modelos_set.add(d['produccion__detallePedido__fichaTecnica__modelo__nombre'])
+    # Consulta para reposiciones a favor y en contra
+    reposiciones_a_favor = (Reposicion.objects
+                            .filter(fecha__range=(fechaInicio, fechaFin))
+                            .values('empleadoReponedor__nombre', 'empleadoReponedor__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre')
+                            .annotate(reposiciones=Sum('cantidad'))
+                            .order_by('empleadoReponedor__nombre', 'empleadoReponedor__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
 
-    modelos_list = list(modelos_set)
-    data[0].extend(modelos_list)
-    
-    empleados_set = set()
-    
-    for d in datos:
-        empleados_set.add(d['empleado__nombre'])
+    reposiciones_en_contra = (Reposicion.objects
+                              .filter(fecha__range=(fechaInicio, fechaFin))
+                              .values('empleadoFalla__nombre', 'empleadoFalla__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre')
+                              .annotate(fallas=Sum('cantidad'))
+                              .order_by('empleadoFalla__nombre', 'empleadoFalla__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
 
-    for empleado in empleados_set:
-        fila = [empleado]
-        for modelo in modelos_list:
-            # Si el empleado trabajó en ese modelo, agregar la cantidad. De lo contrario, agregar 0
-            cantidad = next((d['cantidad'] for d in datos if d['empleado__nombre'] == empleado and d['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo), 0)
-            fila.append(cantidad)
-        data.append(fila)
+    # Combinar la información para construir el objeto de datos
+
+    # Set de Empleados
+    data = []
+    empleados = set([prod['empleado__nombre'] + " " +prod['empleado__apellidos'] for prod in producciones])
+
+    for empleado in empleados:
+        emp_data = {
+            "empleado": empleado,
+            "modelos": []
+        }
+        # Extraccion de modelos por empleado
+        modelos_empleado = [prod for prod in producciones if prod['empleado__nombre'] +" " + prod['empleado__apellidos'] == empleado]
+        # Por cada modelo se extrae la producción, reposiciones a favor y en contra
+        for modelo_data in modelos_empleado:
+            modelo_name = modelo_data['produccion__detallePedido__fichaTecnica__modelo__nombre']
+            produccion = modelo_data['produccion']
+
+            reposicion = next((r['reposiciones'] for r in reposiciones_a_favor if r['empleadoReponedor__nombre'] + " " +
+                              r['empleadoReponedor__apellidos'] == empleado and r['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo_name), 0)
+            falla = next((r['fallas'] for r in reposiciones_en_contra if str(r['empleadoFalla__nombre']) + " " + str(
+                r['empleadoFalla__apellidos']) == empleado and r['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo_name), 0)
+
+            modelo_obj = {
+                "modelo": modelo_name,
+                "produccion": produccion,
+                "reposicion": reposicion,
+                "falla": falla
+            }
+
+            emp_data['modelos'].append(modelo_obj)
+
+        data.append(emp_data)
 
     return Response(data, status=status.HTTP_200_OK)
