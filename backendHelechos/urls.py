@@ -31,7 +31,6 @@ urlpatterns = [
     path('api/', include('apps.DetallePedido.urls')),
     path('api/', include('apps.Produccion.urls')),
     path('api/', include('apps.Registros.urls')),
-    path('api/', include('apps.Reposiciones.urls')),
     path('logout/', Logout.as_view(), name = 'logout'),
     path('login/',Login.as_view(), name = 'login'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

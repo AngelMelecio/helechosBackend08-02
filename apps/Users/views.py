@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,Token,BlacklistMixin
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.Users.serializer import (
@@ -44,5 +44,6 @@ class Logout(GenericAPIView):
         user = User.objects.filter(id=request.data.get('usuario',  ))
         if user.exists():
             RefreshToken.for_user(user.first())
+
             return Response({'message': 'Sesión cerrada correctamente.'}, status=status.HTTP_200_OK)
         return Response({'error': 'No existe este usuario.'}, status=status.HTTP_400_BAD_REQUEST)
