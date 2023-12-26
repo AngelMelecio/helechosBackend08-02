@@ -15,6 +15,9 @@ class Registro(models.Model):
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Calidad', 'Calidad'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia')],
                             default='Tejido')
+    tipo = models.CharField(max_length=20,
+                            choices=[('Ordinario', 'Ordinario'),('Reposicion', 'Reposicion'),('Extra', 'Extra'),('Falla', 'Falla')],
+                            default='Ordinario', null=False, blank=False)
     def __str__(self):
         return "{} {}".format(self.departamento, self.fechaCaptura)
 

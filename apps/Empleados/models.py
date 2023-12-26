@@ -17,7 +17,6 @@ class Empleado(models.Model):
                             choices=[('Tejido', 'Tejido'),('Corte', 'Corte'),('Plancha', 'Plancha'),
                                     ('Empaque', 'Empaque'),('Transporte', 'Transporte'),('Diseno', 'Diseño'),('Gerencia', 'Gerencia'),('Calidad', 'Calidad')],
                             default='Tejido')
-    gafete = models.CharField(max_length=200,null=True, blank=True)
     is_active = models.BooleanField(default = True)
 
     def __str__(self):

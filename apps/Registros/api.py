@@ -7,7 +7,6 @@ from apps.Empleados.models import Empleado
 from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar, RegistroSerializerToChart
 from apps.Produccion.serializers import ProduccionSerializer
 from apps.Produccion.models import Produccion
-from apps.Reposiciones.models import Reposicion
 from apps.Produccion.serializers import ProduccionSerializerPostRegistro
 from apps.Pedidos.models import Pedido
 from apps.Pedidos.serializers import PedidoSerializerGetOne
@@ -237,19 +236,6 @@ def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departament
                     .annotate(produccion=Sum('produccion__cantidad'))
                     .order_by('empleado__nombre', 'empleado__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
 
-    # Consulta para reposiciones a favor y en contra
-    reposiciones_a_favor = (Reposicion.objects
-                            .filter(fecha__range=(fechaInicio, fechaFin))
-                            .values('empleadoReponedor__nombre', 'empleadoReponedor__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre')
-                            .annotate(reposiciones=Sum('cantidad'))
-                            .order_by('empleadoReponedor__nombre', 'empleadoReponedor__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
-
-    reposiciones_en_contra = (Reposicion.objects
-                              .filter(fecha__range=(fechaInicio, fechaFin))
-                              .values('empleadoFalla__nombre', 'empleadoFalla__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre')
-                              .annotate(fallas=Sum('cantidad'))
-                              .order_by('empleadoFalla__nombre', 'empleadoFalla__apellidos', 'produccion__detallePedido__fichaTecnica__modelo__nombre'))
-
     # Combinar la información para construir el objeto de datos
 
     # Set de Empleados
@@ -268,16 +254,10 @@ def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departament
             modelo_name = modelo_data['produccion__detallePedido__fichaTecnica__modelo__nombre']
             produccion = modelo_data['produccion']
 
-            reposicion = next((r['reposiciones'] for r in reposiciones_a_favor if r['empleadoReponedor__nombre'] + " " +
-                              r['empleadoReponedor__apellidos'] == empleado and r['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo_name), 0)
-            falla = next((r['fallas'] for r in reposiciones_en_contra if str(r['empleadoFalla__nombre']) + " " + str(
-                r['empleadoFalla__apellidos']) == empleado and r['produccion__detallePedido__fichaTecnica__modelo__nombre'] == modelo_name), 0)
-
+        
             modelo_obj = {
                 "modelo": modelo_name,
                 "produccion": produccion,
-                "reposicion": reposicion,
-                "falla": falla
             }
 
             emp_data['modelos'].append(modelo_obj)

@@ -15,9 +15,7 @@ SECRET_KEY = '!^%su^#^dzgjjgg@&$#i+^rm87m^mj6l&&-ny8@qnor06bslq='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-
 # Application definition
-
 BASE_APPS = [
     'daphne',
     'channels',
@@ -44,7 +42,6 @@ LOCAL_APPS = [
     'apps.DetallePedido',
     'apps.Produccion',
     'apps.Registros',
-    'apps.Reposiciones'
 ]
 
 THIRD_APPS = [
@@ -69,6 +66,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,8 +75,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'backendHelechos.urls'
 
@@ -165,6 +161,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'mediafiles')
-
-
 MEDIA_URL = '/mediafiles/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
