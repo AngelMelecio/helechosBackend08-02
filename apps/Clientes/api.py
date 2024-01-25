@@ -2,10 +2,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
+from rest_framework.parsers import MultiPartParser, JSONParser
 from apps.Clientes.models import Cliente
 from apps.Clientes.serializers import ClienteSerializer
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.parsers import JSONParser
 
 @api_view(['GET','POST'])
 @parser_classes([MultiPartParser , JSONParser])
