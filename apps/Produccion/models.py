@@ -16,5 +16,7 @@ class Produccion(models.Model):
                             default='Ordinario', null=False, blank=False)
     destino= models.CharField(max_length=50, null=True, blank=True)
     informacionExtra=models.JSONField(null=True, blank=True)
+    contadorRepocision=models.IntegerField(null=False, blank=False,default=0)
+    contadorExtra=models.IntegerField(null=False, blank=False,default=0)
     def __str__(self):
         return "{} {} {} {}".format(self.detallePedido.pedido.idPedido,self.tallaReal, self.numEtiqueta ,self.cantidad)

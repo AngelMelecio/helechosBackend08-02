@@ -20,5 +20,5 @@ class ProduccionSerializerPostRegistro( serializers.ModelSerializer):
     detallePedido = DetallePedidoSerializerPostRegistro()
     class Meta:
         model = Produccion
-        fields = ('idProduccion','detallePedido','estacionActual','numEtiqueta','tallaReal')
+        fields = ('idProduccion','detallePedido','estacionActual','numEtiqueta','tallaReal','destino','tipo')
         

@@ -95,8 +95,7 @@ def pedido_api_view(request):
                             }
 
                             # Guardar la etiqueta
-                            produccion_serializer = ProduccionSerializer(
-                                data=etiqueta)
+                            produccion_serializer = ProduccionSerializer(data=etiqueta)
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
                                 numEtiqueta += 1
