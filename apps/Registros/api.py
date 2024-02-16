@@ -14,6 +14,8 @@ from django.utils import timezone
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db.models import Sum, Case, When, IntegerField, F
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
 
 
 @api_view(['GET', 'POST'])
@@ -228,9 +230,15 @@ def regitros_by_idProduccion(request, pk=None):
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
 def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departamento):
+
+    format_str = '%Y-%m-%d'
+    inicio=make_aware(datetime.strptime(fechaInicio, format_str))
+    fin=make_aware(datetime.strptime(fechaFin, format_str))
+    fin+=timedelta(days=1)-timedelta(seconds=1)
+
     # Consulta mejorada
     producciones = (Registro.objects
-                    .filter(departamento=departamento, fechaCaptura__range=(fechaInicio, fechaFin))
+                    .filter(departamento=departamento, fechaCaptura__range=(inicio, fin))
                     .values('empleado__nombre', 'empleado__apellidos', 
                             'produccion__detallePedido__fichaTecnica__modelo__nombre')
                     .annotate(
@@ -260,11 +268,11 @@ def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departament
 
         for modelo_data in modelos_empleado:
             modelo_obj = {
-                "modelo": modelo_data['produccion__detallePedido__fichaTecnica__modelo__nombre'],
-                "ordinario": modelo_data['ordinario'],
-                "extra": modelo_data['extra'],
-                "reposicion": modelo_data['reposicion'],
-                "falla": modelo_data['falla']
+                "modelo": modelo_data['produccion__detallePedido__fichaTecnica__modelo__nombre'] if modelo_data['produccion__detallePedido__fichaTecnica__modelo__nombre'] is not None else 0,
+                "ordinario": modelo_data['ordinario'] if modelo_data['ordinario'] is not None else 0,
+                "extra": modelo_data['extra'] if modelo_data['extra'] is not None else 0,
+                "reposicion": modelo_data['reposicion'] if modelo_data['reposicion'] is not None else 0,
+                "falla": modelo_data['falla'] if modelo_data['falla'] is not None else 0
                 
             }
 
@@ -278,9 +286,15 @@ def produccion_por_modelo_y_empleado(request, fechaInicio, fechaFin, departament
 @api_view(['GET'])
 @parser_classes([MultiPartParser, JSONParser])
 def produccion_por_maquina_y_turno(request, fechaInicio, fechaFin, departamento):
+
+    format_str = '%Y-%m-%d'
+    inicio=make_aware(datetime.strptime(fechaInicio, format_str))
+    fin=make_aware(datetime.strptime(fechaFin, format_str))
+    fin+=timedelta(days=1)-timedelta(seconds=1)
+
     # Ajusta la consulta para sumar por tipos de turno y producción, ajustando por fallas
     registros = (Registro.objects
-                .filter(departamento=departamento, fechaCaptura__range=(fechaInicio, fechaFin))
+                .filter(departamento=departamento, fechaCaptura__range=(inicio, fin))
                 .values('maquina__linea', 'maquina__numero')
                 .annotate(
                     m=Sum(Case(When(tipo='Ordinario', turno='Mañana', then='produccion__cantidad'),

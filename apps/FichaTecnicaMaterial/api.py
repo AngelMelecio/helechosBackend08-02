@@ -2,9 +2,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
+from apps.DetallePedido.models import DetallePedido
+from apps.FichasTecnicas.models import FichaTecnica
+from apps.Produccion.models import Produccion
+from django.db.models import Sum
+from apps.FichasTecnicas.serializers import FichaTecnicaSerializerExtraCorto
 from apps.FichaTecnicaMaterial.models import FichaTecnicaMaterial
 from apps.FichaTecnicaMaterial.serializers import FichaTecnicaMaterialSerializer
-from apps.FichaTecnicaMaterial.serializers import FichaTecnicaMaterialSerializerListar
+from apps.FichaTecnicaMaterial.serializers import FichaTecnicaMaterialSerializerListar,FichaTecnicaMaterialSerializerListarCorto
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db import transaction
 
@@ -60,3 +65,48 @@ def materiales_by_fichaTecnica(request, pkFichaTecnica):
         },
         status=status.HTTP_200_OK
     )
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser, JSONParser])
+def materiales_by_pedido(request, pkPedido):
+    detallesPedido=DetallePedido.objects.filter(pedido=pkPedido)
+    toResponse=[]
+    for detalle in detallesPedido:
+        fichaTecnicaMaterial = FichaTecnicaMaterial.objects.filter(fichaTecnica=detalle.fichaTecnica)
+        materiales = FichaTecnicaMaterialSerializerListarCorto(fichaTecnicaMaterial, many=True)
+
+        fichaTecnica = FichaTecnica.objects.filter(idFichaTecnica=detalle.fichaTecnica.idFichaTecnica).first()
+        fichaTecnicaSerializer = FichaTecnicaSerializerExtraCorto(fichaTecnica)
+
+        fichaTecnica = fichaTecnicaSerializer.data
+        fichaTecnica['materiales'] = materiales.data
+        print(detalle.idDetallePedido)
+        # Suponiendo que 'detalle.idDetallePedido' es el ID que quieres filtrar
+        paresOrdinarios = Produccion.objects.filter(detallePedido=detalle.idDetallePedido, tipo='Ordinario').aggregate(total_cantidad=Sum('cantidad'))
+        # 'paresOrdinarios' es ahora un diccionario que contiene el total sumado bajo la clave 'total_cantidad'
+        total_cantidad_ordinarios = paresOrdinarios['total_cantidad']
+        # Si no hay objetos que coincidan con el filtro, 'total_cantidad' será None
+        if total_cantidad_ordinarios is None:
+            total_cantidad_ordinarios = 0
+
+        paresReposicion = Produccion.objects.filter(detallePedido=detalle.idDetallePedido, tipo='Reposicion').aggregate(total_cantidad=Sum('cantidad'))
+        total_cantidad_reposicion = paresReposicion['total_cantidad']
+        if total_cantidad_reposicion is None:
+            total_cantidad_reposicion = 0
+
+        paresExtra = Produccion.objects.filter(detallePedido=detalle.idDetallePedido, tipo='Extra').aggregate(total_cantidad=Sum('cantidad'))
+        total_cantidad_extra = paresExtra['total_cantidad']
+        if total_cantidad_extra is None:
+            total_cantidad_extra = 0
+        
+        toResponse.append({
+            'idDetallePedido':detalle.idDetallePedido,
+            'fichaTecnica':fichaTecnica,
+            'cantidades':{
+                'ordinario':total_cantidad_ordinarios,
+                'reposicion':total_cantidad_reposicion,
+                'extra':total_cantidad_extra
+            }
+        })
+  
+    return Response( toResponse, status=status.HTTP_200_OK )

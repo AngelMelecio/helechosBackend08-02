@@ -5,7 +5,10 @@ from apps.Proveedores.models import Proveedor
 class Material(models.Model):
     idMaterial = models.AutoField(auto_created=True, primary_key=True)
     tipo =  models.CharField(max_length=20,
-                            choices=[('Poliester', 'Poliester'),('Melting', 'Melting'),('Lurex', 'Lurex'),('Goma','Goma'),('Licra desnuda','Licra desnuda')],
+                            choices=[('Poliester', 'Poliester'),('Melting', 'Melting'),
+                                     ('Lurex', 'Lurex'),('Goma','Goma'),
+                                     ('Licra desnuda','Licra desnuda'),
+                                     ('Division','Division')],
                             default='Poliester') 
     color= models.CharField(max_length=200,null=True, blank=True)
     calibre= models.CharField(max_length=5,
