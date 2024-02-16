@@ -4,16 +4,11 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Pedidos.models import Pedido
 from apps.Produccion.models import Produccion
-from apps.DetallePedido.models import DetallePedido
-from apps.FichaTecnicaMaterial.models import FichaTecnicaMaterial
-from apps.FichaTecnicaMaterial.serializers import FichaMaterialesSerializerGetPedido
 from apps.Pedidos.serializers import PedidoSerializer, PedidoSerializerListar, PedidoSerializerGetOne
-from apps.DetallePedido.serializers import DetallePedidoSerializer, DetallePedidoSerializerListar, DetallePedidoSerializerGetPedido
+from apps.DetallePedido.serializers import DetallePedidoSerializer
 from apps.Produccion.serializers import ProduccionSerializer
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.db import transaction
-from django.db.models import Sum, Count
-
 
 @transaction.atomic
 @api_view(['GET', 'POST'])
@@ -25,10 +20,18 @@ def pedido_api_view(request):
         pedido_serializer = PedidoSerializerListar(pedidos, many=True)
         for pedido in pedido_serializer.data:
             id = pedido.get('idPedido')
+
             ready = Produccion.objects.filter(
-                detallePedido__pedido__idPedido=id, estacionActual='empacado' or 'entregado').count()
+                detallePedido__pedido__idPedido = id, 
+                estacionActual__in=['empacado', 'entregado'],
+                tipo='Ordinario'
+            ).count()
+
             goal = Produccion.objects.filter(
-                detallePedido__pedido__idPedido=id).count()
+                detallePedido__pedido__idPedido=id,
+                tipo='Ordinario'
+            ).count()
+
             progress = 0
             if goal > 0 :
               progress = int((ready*100)/goal)
@@ -43,8 +46,9 @@ def pedido_api_view(request):
                 if lower_bound <= progress <= upper_bound:
                     color = associated_color
                     break
-            pedido['progressBar'] = {
-                "progress": progress, "goal": 100, "color": color}
+
+            pedido['progressBar'] = {"progress": progress, "goal": 100, "color": color}
+            
         return Response(pedido_serializer.data, status=status.HTTP_200_OK)
 
     # Create

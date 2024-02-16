@@ -23,6 +23,11 @@ class FichaTecnicaSerializerSimple(serializers.ModelSerializer):
     class Meta:
         model = FichaTecnica
         fields = ('idFichaTecnica','nombre','fotografia','talla','fechaCreacion','fechaUltimaEdicion')
+class FichaTecnicaSerializerExtraCorto(serializers.ModelSerializer):
+    class Meta:
+        model = FichaTecnica
+        fields = ('idFichaTecnica','nombre','talla','fotografia')
+
 
 class FichaTecnicaSerializerGetPedido(serializers.ModelSerializer):
     

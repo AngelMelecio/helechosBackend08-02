@@ -15,6 +15,12 @@ class FichaTecnicaMaterialSerializerListar(serializers.ModelSerializer):
         model = FichaTecnicaMaterial
         fields = '__all__'
 
+class FichaTecnicaMaterialSerializerListarCorto(serializers.ModelSerializer):
+    material = MaterialSerializerListar()
+    class Meta:
+        model = FichaTecnicaMaterial
+        fields = ('id','material','peso')
+
 class FichaMaterialesSerializerGetPedido(serializers.ModelSerializer):
     material = MaterialSerializerGetPedido()
     class Meta:
