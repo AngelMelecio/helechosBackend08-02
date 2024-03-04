@@ -113,7 +113,7 @@ def registro_api_view(request):
                                 # Obtener campo progreso
                                 progreso_data = pedido.progreso if pedido.progreso else {'total': 0, 'progreso': 0, 'estado': 'Pendiente'}
                                 
-                                # Actualiza el total en el diccionario progreso si llego a empaque
+                                # Actualiza el progreso en el diccionario progreso si llego a empaque
                                 if estacionNueva == 'empacado':
                                     progreso_data['progreso'] += cantidad
                                 
