@@ -3,7 +3,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from apps.Registros.models import Registro
+from apps.Pedidos.models import Pedido
 from apps.Empleados.models import Empleado
+from apps.Pedidos.serializers import PedidoSerializer
 from apps.Registros.serializers import RegistroSerializer, RegistroSerializerListar, RegistroSerializerToChart
 from apps.Produccion.models import Produccion
 from apps.Produccion.serializers import ProduccionSerializerPostRegistro
@@ -58,6 +60,7 @@ def registro_api_view(request):
             rta = prd_srlzr.data['detallePedido']['rutaProduccion']
             estacionAnterior = prd_srlzr.data.get('estacionActual')
             tipo = prd_srlzr.data['tipo']
+            cantidad = prd_srlzr.data['cantidad']
             destino = rta[prd_srlzr.data['destino']] if tipo == 'Reposicion' else None
 
             if not estacionAnterior == "empacado":
@@ -103,6 +106,27 @@ def registro_api_view(request):
                     })
                     if reg_serializer.is_valid():
                         reg_serializer.save()
+                        
+                        if tipo != 'Reposicion' and tipo != 'Extra':
+                            pedido = Pedido.objects.filter(idPedido=idPed).first()
+                            if pedido:
+                                # Obtener campo progreso
+                                progreso_data = pedido.progreso if pedido.progreso else {'total': 0, 'progreso': 0, 'estado': 'Pendiente'}
+                                
+                                # Actualiza el total en el diccionario progreso si llego a empaque
+                                if estacionNueva == 'empacado':
+                                    progreso_data['progreso'] += cantidad
+                                
+                                # Comprueba si el estado debe cambiarse a 'Terminado'
+                                if progreso_data['total'] == progreso_data['progreso']:
+                                    progreso_data['estado'] = 'Terminado'
+                                
+                                # Serializador con los datos actualizados
+                                pedido_serializer = PedidoSerializer(pedido, data={'progreso': progreso_data}, partial=True)
+                                
+                                # Validar y guardar los datos actualizados
+                                if pedido_serializer.is_valid():
+                                    pedido_serializer.save()
                     else:
                         print(reg_serializer.errors)
 

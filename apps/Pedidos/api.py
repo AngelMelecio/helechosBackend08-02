@@ -16,39 +16,33 @@ from django.db import transaction
 def pedido_api_view(request):
     # list
     if request.method == 'GET':
-        pedidos = Pedido.objects.all()
+        pedidos = Pedido.objects.all().order_by('-fechaRegistro')
+        '''
+        for pedido in Pedido.objects.all():
+            print(pedido)
+            total_empacado = 0
+            total_ordinario = 0
+
+            # Filtra los registros de producción de tipo 'Ordinario' para este pedido
+            producciones_ordinarias = Produccion.objects.filter(detallePedido__pedido=pedido, tipo='Ordinario')
+            total_ordinario = sum(produccion.cantidad for produccion in producciones_ordinarias)
+
+            # Filtra los registros de producción 'Empacados' para este pedido
+            producciones_empacadas = Produccion.objects.filter(detallePedido__pedido=pedido, estacionActual='empacado', tipo='Ordinario')
+            total_empacado = sum(produccion.cantidad for produccion in producciones_empacadas)
+
+            # Prepara el nuevo valor para el campo 'progreso'
+            progreso_data = {
+                'total': total_ordinario,
+                'progreso': total_empacado,
+                'estado': 'Terminado' if total_ordinario == total_empacado else 'Pendiente'
+            }
+            print(progreso_data)
+            # Actualiza el pedido con el nuevo valor de 'progreso'
+            pedido.progreso = progreso_data
+            pedido.save()
+        '''
         pedido_serializer = PedidoSerializerListar(pedidos, many=True)
-        for pedido in pedido_serializer.data:
-            id = pedido.get('idPedido')
-
-            ready = Produccion.objects.filter(
-                detallePedido__pedido__idPedido = id, 
-                estacionActual__in=['empacado', 'entregado'],
-                tipo='Ordinario'
-            ).count()
-
-            goal = Produccion.objects.filter(
-                detallePedido__pedido__idPedido=id,
-                tipo='Ordinario'
-            ).count()
-
-            progress = 0
-            if goal > 0 :
-              progress = int((ready*100)/goal)
-            color_ranges = [
-                (0, 25, '#9b1b1b'),
-                (26, 50, '#ea580c'),
-                (51, 75, '#eab308'),
-                (76, 100, '#15803d'),
-            ]
-            color = '#ffffff'
-            for lower_bound, upper_bound, associated_color in color_ranges:
-                if lower_bound <= progress <= upper_bound:
-                    color = associated_color
-                    break
-
-            pedido['progressBar'] = {"progress": progress, "goal": 100, "color": color}
-            
         return Response(pedido_serializer.data, status=status.HTTP_200_OK)
 
     # Create
@@ -71,6 +65,9 @@ def pedido_api_view(request):
             pedido_serializer.save()
             newPedidoId = pedido_serializer.data.get('idPedido')
             numEtiqueta = 1
+
+            total=0
+
             for detalle in detalles:
                 detalle['pedido'] = newPedidoId
                 detallePedido_serializer = DetallePedidoSerializer(
@@ -97,7 +94,7 @@ def pedido_api_view(request):
                                 "estacionActual": "creada",
                                 "tallaReal": cantidad['talla']
                             }
-
+                            total += cantidad['paquete']
                             # Guardar la etiqueta
                             produccion_serializer = ProduccionSerializer(data=etiqueta)
                             if produccion_serializer.is_valid():
@@ -108,8 +105,6 @@ def pedido_api_view(request):
                                     'No se pudieron generar las etiquetas, error en la solicitud.')
                                 success = False
 
-                           
-
                         # Guardar la última etiqueta
                         if ultimoPaquete > 0:
                             etiqueta = {
@@ -119,15 +114,21 @@ def pedido_api_view(request):
                                 "estacionActual": "creada",
                                 "tallaReal": cantidad['talla']
                             }
-                            produccion_serializer = ProduccionSerializer(
-                                data=etiqueta)
+                            total += ultimoPaquete
+                            produccion_serializer = ProduccionSerializer(data=etiqueta)
+                            
                             if produccion_serializer.is_valid():
                                 produccion_serializer.save()
                                 numEtiqueta += 1
+
                             else:
                                 errors.append(
                                     'No se pudo generar la última etiqueta, error en la solicitud.')
                                 success = False
+
+                        pedido = Pedido.objects.get(idPedido=newPedidoId)
+                        pedido.progreso['total'] = total
+                        pedido.save()
                 else:
                     print(detallePedido_serializer.errors)
                     errors.append(
