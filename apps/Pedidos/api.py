@@ -153,7 +153,7 @@ def pedido_api_view(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 @transaction.atomic
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @parser_classes([MultiPartParser, JSONParser])
 def pedido_detail_api_view(request, pk=None):
     pedido = Pedido.objects.filter(idPedido=pk).first()
@@ -177,6 +177,14 @@ def pedido_detail_api_view(request, pk=None):
                     cantidad['etiquetas'] = etiquetas_estacion_serializer.data
 
             return Response(pedido_serializer.data, status=status.HTTP_200_OK)
+        
+        elif request.method == 'PATCH':  # Manejo de PATCH
+            serializer = PedidoSerializer(pedido, data=request.data, partial=True)  # partial=True para actualización parcial
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': '¡Pedido Terminado!'}, status=status.HTTP_200_OK)
+            return Response({'message': 'No fue posible cambiar el estado del pedido'}, status=status.HTTP_400_BAD_REQUEST)
+
 
         elif request.method == 'DELETE':
             pedido.delete()
