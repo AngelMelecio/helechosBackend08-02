@@ -107,26 +107,18 @@ def registro_api_view(request):
                     if reg_serializer.is_valid():
                         reg_serializer.save()
                         
-                        if tipo != 'Reposicion' and tipo != 'Extra':
+                        #Actualizar el estado del pedido
+                        if tipo not in ['Reposicion', 'Extra']:
                             pedido = Pedido.objects.filter(idPedido=idPed).first()
                             if pedido:
-                                # Obtener campo progreso
-                                progreso_data = pedido.progreso if pedido.progreso else {'total': 0, 'progreso': 0, 'estado': 'Pendiente'}
-                                
-                                # Actualiza el progreso en el diccionario progreso si llego a empaque
-                                if estacionNueva == 'empacado':
-                                    progreso_data['progreso'] += cantidad
-                                
-                                # Comprueba si el estado debe cambiarse a 'Terminado'
-                                if progreso_data['total'] == progreso_data['progreso']:
-                                    progreso_data['estado'] = 'Terminado'
-                                
-                                # Serializador con los datos actualizados
-                                pedido_serializer = PedidoSerializer(pedido, data={'progreso': progreso_data}, partial=True)
-                                
-                                # Validar y guardar los datos actualizados
-                                if pedido_serializer.is_valid():
-                                    pedido_serializer.save()
+                                if estacionNueva == 'empacado' and pedido.estado != 'Terminado':
+                                    pedido.paresProgreso += cantidad
+
+                                if pedido.paresTotales == pedido.paresProgreso:
+                                    pedido.estado = 'Terminado'
+
+                                pedido.save()
+
                     else:
                         print(reg_serializer.errors)
 

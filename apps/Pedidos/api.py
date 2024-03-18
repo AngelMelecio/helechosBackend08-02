@@ -17,9 +17,9 @@ def pedido_api_view(request):
     # list
     if request.method == 'GET':
         pedidos = Pedido.objects.all().order_by('-fechaRegistro')
+        print(pedidos)
         '''
         for pedido in Pedido.objects.all():
-            print(pedido)
             total_empacado = 0
             total_ordinario = 0
 
@@ -30,16 +30,11 @@ def pedido_api_view(request):
             # Filtra los registros de producción 'Empacados' para este pedido
             producciones_empacadas = Produccion.objects.filter(detallePedido__pedido=pedido, estacionActual='empacado', tipo='Ordinario')
             total_empacado = sum(produccion.cantidad for produccion in producciones_empacadas)
-
-            # Prepara el nuevo valor para el campo 'progreso'
-            progreso_data = {
-                'total': total_ordinario,
-                'progreso': total_empacado,
-                'estado': 'Terminado' if total_ordinario == total_empacado else 'Pendiente'
-            }
-            print(progreso_data)
+           
             # Actualiza el pedido con el nuevo valor de 'progreso'
-            pedido.progreso = progreso_data
+            pedido.paresTotales = total_ordinario
+            pedido.paresProgreso = total_empacado
+            pedido.estado = 'Terminado' if total_ordinario == total_empacado else 'Pendiente'
             pedido.save()
         '''
         pedido_serializer = PedidoSerializerListar(pedidos, many=True)
@@ -126,9 +121,8 @@ def pedido_api_view(request):
                                     'No se pudo generar la última etiqueta, error en la solicitud.')
                                 success = False
 
-                        pedido = Pedido.objects.get(idPedido=newPedidoId)
-                        pedido.progreso['total'] = total
-                        pedido.save()
+                        Pedido.objects.filter(idPedido=newPedidoId).update(paresTotales=total)
+
                 else:
                     print(detallePedido_serializer.errors)
                     errors.append(
